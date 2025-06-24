@@ -1,83 +1,63 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tabla de Reservas - </title>
-    <link rel="icon" type="image/x-icon" href="../static/img/favicon.ico">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <style>
-        /* Estilos para las filas de la tabla */
-        .odd {
-            background-color: white !important;
-        }
-        .even {
-            background-color: #fff9e6 !important;
-        }
-        
-        /* Estilos para ajustar el ancho de las columnas */
-        #reservationsTable th:nth-child(1) { width: 5%; }  /* ID */
-        #reservationsTable th:nth-child(2) { width: 15%; } /* Nombre */
-        #reservationsTable th:nth-child(3) { width: 10%; } /* Fecha */
-        #reservationsTable th:nth-child(4) { width: 8%; }  /* Hora */
-        #reservationsTable th:nth-child(5) { width: 6%; }  /* Personas - más angosta */
-        #reservationsTable th:nth-child(6) { width: 12%; } /* Teléfono */
-        #reservationsTable th:nth-child(7) { width: 15%; } /* Email */
-        #reservationsTable th:nth-child(8) { width: 10%; } /* Estado */
-        #reservationsTable th:nth-child(9) { width: 19%; } /* Acciones - más espacio */
-        
-        /* Espaciado adicional para toda la tabla */
-        .table-container {
-            margin: 0 -1rem;
-        }
-        
-        /* Ajustar el padding de las celdas */
-        #reservationsTable td {
-            padding: 8px 4px !important;
-            word-wrap: break-word;
-        }
-        
-        #reservationsTable th {
-            padding: 8px 4px !important;
-        }
-        
-        /* Hacer que los botones sean más compactos */
-        .status-select {
-            font-size: 0.875rem;
-            padding: 4px 6px;
-            min-width: 120px;
-        }
-        
-        .view-details {
-            font-size: 0.875rem;
-            padding: 4px 8px;
-            white-space: nowrap;
-        }
-    </style>
-</head>
-<body style="background-color: rgb(227, 230, 230);" class="flex flex-col min-h-screen">
-    <!-- Top Navigation Bar -->
-    <nav class="bg-white shadow-md">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">             
-                <div class="flex items-center">
-                    <img src="/static/img/logo.png" alt="Gandolfo Restaurant" class="h-10 w-auto mr-3">
-                </div>
-                <div class="flex items-center">
-                    <div class="mr-4 text-gray-700">Bienvenido, <span class="font-semibold">{{ username }}</span></div>
-                    <a href="/admin/logout" style="background-color: #fbc222; color: black;" class="hover:bg-[#e0b12e] font-bold py-2 px-4 rounded">
-                        Cerrar Sesión
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
+{% extends "admin/base.html" %}
 
-    <!-- Main Content -->
-    <div class="container mx-auto px-2 sm:px-4 py-6">
+{% block title %}Tabla de Reservas{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<style>
+    /* Estilos para las filas de la tabla */
+    .odd {
+        background-color: white !important;
+    }
+    .even {
+        background-color: #fff9e6 !important;
+    }
+    
+    /* Estilos para ajustar el ancho de las columnas */
+    #reservationsTable th:nth-child(1) { width: 5%; }  /* ID */
+    #reservationsTable th:nth-child(2) { width: 15%; } /* Nombre */
+    #reservationsTable th:nth-child(3) { width: 10%; } /* Fecha */
+    #reservationsTable th:nth-child(4) { width: 8%; }  /* Hora */
+    #reservationsTable th:nth-child(5) { width: 6%; }  /* Personas - más angosta */
+    #reservationsTable th:nth-child(6) { width: 12%; } /* Teléfono */
+    #reservationsTable th:nth-child(7) { width: 15%; } /* Email */
+    #reservationsTable th:nth-child(8) { width: 10%; } /* Estado */
+    #reservationsTable th:nth-child(9) { width: 19%; } /* Acciones - más espacio */
+    
+    /* Espaciado adicional para toda la tabla */
+    .table-container {
+        margin: 0 -1rem;
+    }
+    
+    /* Ajustar el padding de las celdas */
+    #reservationsTable td {
+        padding: 8px 4px !important;
+        word-wrap: break-word;
+    }
+    
+    #reservationsTable th {
+        padding: 8px 4px !important;
+    }
+    
+    /* Hacer que los botones sean más compactos */
+    .status-select {
+        font-size: 0.875rem;
+        padding: 4px 6px;
+        min-width: 120px;
+    }
+    
+    .view-details {
+        font-size: 0.875rem;
+        padding: 4px 8px;
+        white-space: nowrap;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-800 mb-6" style="padding: 10px;">Tabla de Reservas</h1>
             <div class="flex space-x-3">
@@ -409,12 +389,5 @@
             });
         });
     </script>
-
-    <footer class="bg-white border-t border-gray-200 py-4 mt-auto">
-        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
-            © 2025 Gandolfo. Un desarrollo de <a href="https://gandolfo.app/" class="text-green-800 hover:text-green-1000">
-                &nbsp;&nbsp;<img src="/static/img/logo-vivacom_gris.png" alt="Gandolfo" class="h-4 inline-block">
-            </a>
-        </div>
-    </footer>
-</html>
+</div>
+{% endblock %}

@@ -1177,6 +1177,18 @@ def feedback():
         
         if response.data:
             feedbacks = response.data
+            
+            # Procesar fechas para convertir strings a datetime objects
+            for feedback in feedbacks:
+                if feedback.get('fecha_feedback') and isinstance(feedback['fecha_feedback'], str):
+                    try:
+                        # Convertir string a datetime
+                        from datetime import datetime
+                        feedback['fecha_feedback'] = datetime.fromisoformat(feedback['fecha_feedback'].replace('Z', '+00:00'))
+                    except Exception as e:
+                        logger.warning(f"Error convirtiendo fecha {feedback['fecha_feedback']}: {e}")
+                        feedback['fecha_feedback'] = None
+            
             estadisticas['total_feedbacks'] = len(feedbacks)
             
             # Calcular estadísticas
@@ -1203,7 +1215,15 @@ def feedback():
         logger.error(f"Error cargando feedback: {e}")
         flash("Error al cargar los feedbacks", "error")
     
-    return render_template('admin/feedback_debug.html',
+    # Debug info
+    debug_info = {
+        'session_restaurant_id': session.get('restaurant_id'),
+        'session_keys': list(session.keys()),
+        'feedbacks_count': len(feedbacks),
+        'estadisticas': estadisticas
+    }
+    
+    return render_template('admin/feedback.html',
                          restaurant_name=restaurant_name or 'Restaurante',
                          username=session.get('nombre_usuario', session.get('username', 'Usuario')),
                          feedbacks=feedbacks or [],
