@@ -1165,7 +1165,8 @@ def feedback():
     estadisticas = {
         'total_feedbacks': 0,
         'promedio_puntuacion': 0,
-        'distribuccion_puntuaciones': [0, 0, 0, 0, 0]  # índices 0-4 para puntuaciones 1-5
+        'distribuccion_puntuaciones': [0, 0, 0, 0, 0],  # índices 0-4 para puntuaciones 1-5
+        'porcentajes_puntuaciones': [0, 0, 0, 0, 0]  # porcentajes calculados
     }
     
     try:
@@ -1187,6 +1188,14 @@ def feedback():
                 for puntuacion in puntuaciones:
                     if 1 <= puntuacion <= 5:
                         estadisticas['distribuccion_puntuaciones'][puntuacion - 1] += 1
+                
+                # Calcular porcentajes
+                total = estadisticas['total_feedbacks']
+                if total > 0:
+                    for i in range(5):
+                        count = estadisticas['distribuccion_puntuaciones'][i]
+                        porcentaje = (count / total * 100) if total > 0 else 0
+                        estadisticas['porcentajes_puntuaciones'][i] = round(porcentaje, 1)
         
         logger.info(f"Feedback: Cargados {len(feedbacks)} feedbacks para restaurante {restaurant_id}")
         
@@ -1194,11 +1203,11 @@ def feedback():
         logger.error(f"Error cargando feedback: {e}")
         flash("Error al cargar los feedbacks", "error")
     
-    return render_template('admin/feedback.html',
-                         restaurant_name=restaurant_name,
-                         username=session.get('nombre_usuario', 'Usuario'),
-                         feedbacks=feedbacks,
-                         estadisticas=estadisticas)
+    return render_template('admin/feedback_debug.html',
+                         restaurant_name=restaurant_name or 'Restaurante',
+                         username=session.get('nombre_usuario', session.get('username', 'Usuario')),
+                         feedbacks=feedbacks or [],
+                         estadisticas=estadisticas or {})
 
 @admin_bp.route('/api/update_reservation', methods=['POST'])
 @login_required
