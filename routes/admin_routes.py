@@ -328,6 +328,8 @@ def register():
                     session['user_id'] = user_id
                     session['email'] = username
                     session['nombre'] = nombre
+                    session['nombre_usuario'] = nombre  # Para compatibilidad con el template
+                    session['username'] = nombre       # Para compatibilidad con el template
                     session['rol'] = 'admin'
                     session['is_authenticated'] = True
                     
