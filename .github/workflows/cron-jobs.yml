@@ -1,0 +1,69 @@
+name: Configure Render Cron Jobs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'scripts/**'
+      - 'services/**'
+      - 'crontab.txt'
+      - '.github/workflows/cron-jobs.yml'
+
+jobs:
+  update-cron-jobs:
+    name: Update Render Cron Jobs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+          
+      - name: Update Render Cron Jobs
+        run: |
+          echo "Updating Render cron jobs..."
+          # Este script debería usar la API de Render para configurar los cron jobs
+          # basados en la configuración del archivo crontab.txt
+          python - <<EOF
+          import os
+          import requests
+          
+          # Estos valores deberían estar configurados como secretos en GitHub
+          RENDER_API_KEY = os.environ.get('RENDER_API_KEY')
+          RENDER_SERVICE_ID = os.environ.get('RENDER_SERVICE_ID')
+          
+          # Definir los cron jobs que queremos configurar
+          cron_jobs = [
+              {
+                  "name": "Daily Reminders",
+                  "schedule": "0 10 * * *",
+                  "command": "python scripts/send_reminders.py",
+                  "description": "Envía recordatorios de reservas todos los días a las 10:00 AM"
+              },
+              {
+                  "name": "Hourly Reservation Check",
+                  "schedule": "0 * * * *",
+                  "command": "python scripts/check_reservations.py",
+                  "description": "Verifica reservas próximas cada hora"
+              }
+          ]
+          
+          print("Configuración de cron jobs lista para ser implementada en Render")
+          print("NOTA: Este script es un placeholder y necesita ser implementado con la API real de Render")
+          
+          # Implementación real requeriría usar la API de Render
+          # Por ahora solo imprimimos los valores que se configurarían
+          for job in cron_jobs:
+              print(f"- {job['name']}: {job['schedule']} - {job['command']}")
+          EOF
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }} 

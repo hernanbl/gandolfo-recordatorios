@@ -1,0 +1,136 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Nuevo Restaurante{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Crear Nuevo Restaurante</h1>
+    
+    <div class="bg-white rounded-lg shadow-md mb-6">
+        <div class="border-b border-gray-200 px-6 py-4">
+            <h2 class="text-xl font-semibold text-gray-800">Información Básica</h2>
+        </div>
+        <div class="px-6 py-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="{% if category == 'error' %}bg-red-100 border border-red-400 text-red-700{% else %}bg-green-100 border border-green-400 text-green-700{% endif %} px-4 py-3 rounded relative mb-4">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST" action="{{ url_for('admin.crear_restaurante', next=next_url) }}">
+                <!-- Hidden field for next URL in case it gets lost in the form submission -->
+                {% if next_url %}
+                <input type="hidden" name="next" value="{{ next_url }}">
+                {% endif %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Restaurante *</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                               id="nombre" name="nombre" required>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                    <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                             id="descripcion" name="descripcion" rows="3"></textarea>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                           id="direccion" name="direccion">
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                               id="telefono" name="telefono">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                               id="email" name="email">
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="estado" class="block text-sm font-medium text-gray-700 mb-1">Estado del Restaurante</label>
+                    <select id="estado" name="estado" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="activo" selected>Activo</option>
+                        <option value="no-activo">Inactivo</option>
+                        <option value="mantenimiento">En mantenimiento</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Un restaurante activo estará disponible para recibir reservas</p>
+                </div>
+                
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-blue-700">
+                                Después de crear el restaurante, podrás configurar más detalles como horarios, menú y opciones adicionales.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center mt-6">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 rounded-md flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Crear Restaurante
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Mostrar mensajes de autenticación si existen
+    document.addEventListener('DOMContentLoaded', function() {
+        const authMessage = sessionStorage.getItem('auth_message');
+        const authMessageType = sessionStorage.getItem('auth_message_type') || 'info';
+        
+        if (authMessage) {
+            // Crear y mostrar el mensaje
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-md shadow-lg max-w-md ${
+                authMessageType === 'success' ? 'bg-green-100 border border-green-400 text-green-700' :
+                authMessageType === 'error' ? 'bg-red-100 border border-red-400 text-red-700' :
+                'bg-blue-100 border border-blue-400 text-blue-700'
+            }`;
+            alertDiv.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${authMessage}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-lg font-bold">&times;</button>
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+            
+            // Limpiar el sessionStorage
+            sessionStorage.removeItem('auth_message');
+            sessionStorage.removeItem('auth_message_type');
+        }
+    });
+</script>
+{% endblock %}

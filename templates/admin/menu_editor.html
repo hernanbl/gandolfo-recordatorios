@@ -1,0 +1,453 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Editor de Menú - Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-white mb-6" style="text-shadow: 0 0 10px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 0, 0, 0.5); padding: 10px;">Editor de Menú</h1>
+    
+    <!-- Menú de navegación rápida -->
+    <div class="mb-6 p-4 bg-gray-100 rounded-lg shadow-sm">
+        <h3 class="text-lg font-semibold mb-2">Editar el día:</h3>
+        <div class="flex flex-wrap gap-2">
+            {% for dia in dias_semana %}
+                <a href="#dia-{{ dia }}" class="px-2 py-1 text-sm bg-amber-50 text-black rounded-md hover:bg-amber-100 transition-colors">
+                    {{ dia|capitalize }}
+                </a>
+            {% endfor %}
+            <a href="#menu-especial" class="px-2 py-1 text-sm bg-green-100 text-black rounded-md hover:bg-green-200 transition-colors">
+                Menú Sin TACC
+            </a>
+        </div>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="mb-4 p-4 rounded-lg {% if category == 'success' %}bg-green-100 text-green-800{% elif category == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <form method="POST" id="menuEditorForm" action="{{ url_for('admin.guardar_menu') }}" data-dias-semana="{{ dias_semana | tojson | safe }}" class="bg-white shadow-md rounded-lg p-6">
+        {% for dia in dias_semana %}
+        <div id="dia-{{ dia }}" class="mb-8 border-b pb-6 {% if loop.index0 % 2 == 0 %}bg-amber-50{% else %}bg-white{% endif %} p-4 rounded-lg">
+            <h2 class="text-xl font-bold mb-4 capitalize">{{ dia }}</h2>
+            
+            <!-- Almuerzo -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-2">Almuerzo</h3>
+                <div id="{{ dia }}_almuerzo_items">
+                    {% set almuerzo_items = menu.dias_semana.get(dia, {}).get('almuerzo', []) %}
+                    {% if almuerzo_items %}
+                        {% for item in almuerzo_items %}
+                        <div class="flex mb-2">
+                            <input type="text" name="{{ dia }}_almuerzo_nombre_{{ loop.index0 }}" value="{{ item.name }}" 
+                                   class="flex-grow mr-2 p-2 border rounded" placeholder="Nombre del plato">
+                            <input type="text" name="{{ dia }}_almuerzo_precio_{{ loop.index0 }}" value="{{ item.price }}" 
+                                   class="w-24 p-2 border rounded" placeholder="Precio">
+                            <button type="button" class="ml-2 bg-red-500 text-white p-2 rounded" 
+                                    onclick="this.parentElement.remove()">Eliminar</button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="flex mb-2">
+                            <input type="text" name="{{ dia }}_almuerzo_nombre_0" value="" 
+                                   class="flex-grow mr-2 p-2 border rounded" placeholder="Nombre del plato">
+                            <input type="text" name="{{ dia }}_almuerzo_precio_0" value="" 
+                                   class="w-24 p-2 border rounded" placeholder="Precio">
+                            <button type="button" class="ml-2 bg-red-500 text-white p-2 rounded" 
+                                    onclick="this.parentElement.remove()">Eliminar</button>
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="button" class="mt-2 bg-amber-200 text-black p-2 rounded"
+                        onclick="addMenuItem('{{ dia }}', 'almuerzo')">
+                    Añadir Plato
+                </button>
+            </div>
+            
+            <!-- Cena -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-2">Cena</h3>
+                <div class="mb-2">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="{{ dia }}_cena_cerrado" 
+                               {% if menu.dias_semana.get(dia, {}).get('cena') == 'cerrado' %}checked{% endif %}
+                               class="form-checkbox" onchange="toggleCenaItems('{{ dia }}', this.checked)">
+                        <span class="ml-2">Cerrado para cena</span>
+                    </label>
+                </div>
+                <div id="{{ dia }}_cena_items" {% if menu.dias_semana.get(dia, {}).get('cena') == 'cerrado' %}style="display:none"{% endif %}>
+                    {% set cena_items = menu.dias_semana.get(dia, {}).get('cena', []) %}
+                    {% if cena_items and cena_items != 'cerrado' %}
+                        {% for item in cena_items %}
+                        <div class="flex mb-2">
+                            <input type="text" name="{{ dia }}_cena_nombre_{{ loop.index0 }}" value="{{ item.name }}" 
+                                   class="flex-grow mr-2 p-2 border rounded" placeholder="Nombre del plato">
+                            <input type="text" name="{{ dia }}_cena_precio_{{ loop.index0 }}" value="{{ item.price }}" 
+                                   class="w-24 p-2 border rounded" placeholder="Precio">
+                            <button type="button" class="ml-2 bg-red-500 text-white p-2 rounded" 
+                                    onclick="this.parentElement.remove()">Eliminar</button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="flex mb-2">
+                            <input type="text" name="{{ dia }}_cena_nombre_0" value="" 
+                                   class="flex-grow mr-2 p-2 border rounded" placeholder="Nombre del plato">
+                            <input type="text" name="{{ dia }}_cena_precio_0" value="" 
+                                   class="w-24 p-2 border rounded" placeholder="Precio">
+                            <button type="button" class="ml-2 bg-red-500 text-white p-2 rounded" 
+                                    onclick="this.parentElement.remove()">Eliminar</button>
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="button" id="{{ dia }}_add_cena_btn" class="mt-2 bg-amber-200 text-black p-2 rounded"
+                        onclick="addMenuItem('{{ dia }}', 'cena')" 
+                        {% if menu.dias_semana.get(dia, {}).get('cena') == 'cerrado' %}style="display:none"{% endif %}>
+                    Añadir Plato
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <!-- Sección para Menú Sin TACC / Celíacos -->
+        <div id="menu-especial" class="mb-8 border-b pb-6 bg-green-50 p-4 rounded-lg">
+            <h2 class="text-xl font-bold mb-4">Menú Sin TACC / Celíacos</h2>
+            
+            <!-- Platos principales -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-2">Platos Principales</h3>
+                <div id="celiaco_platos_principales_items">
+                    {% set platos_principales = menu.get('menu_especial', {}).get('celiaco', {}).get('platos_principales', []) %}
+                    {% if platos_principales %}
+                        {% for plato in platos_principales %}
+                        <div class="flex mb-2">
+                            <input type="text" name="celiaco_plato_principal_{{ loop.index0 }}" value="{{ plato }}" 
+                                   class="flex-grow mr-2 p-2 border rounded" placeholder="Nombre del plato sin TACC">
+                            <button type="button" class="ml-2 bg-red-500 text-white p-2 rounded" 
+                                    onclick="this.parentElement.remove()">Eliminar</button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="flex mb-2">
+                            <input type="text" name="celiaco_plato_principal_0" value="" 
+                                   class="flex-grow mr-2 p-2 border rounded" placeholder="Nombre del plato sin TACC">
+                            <button type="button" class="ml-2 bg-red-500 text-white p-2 rounded" 
+                                    onclick="this.parentElement.remove()">Eliminar</button>
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="button" class="mt-2 bg-green-200 text-black p-2 rounded"
+                        onclick="addCeliacoItem('platos_principales')">Añadir Plato Principal</button>
+            </div>
+            
+            <!-- Postres -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-2">Postres</h3>
+                <div id="celiaco_postres_items">
+                    {% set postres = menu.get('menu_especial', {}).get('celiaco', {}).get('postres', []) %}
+                    {% if postres %}
+                        {% for postre in postres %}
+                        <div class="flex mb-2">
+                            <input type="text" name="celiaco_postre_{{ loop.index0 }}" value="{{ postre }}" 
+                                   class="flex-grow mr-2 p-2 border rounded" placeholder="Nombre del postre sin TACC">
+                            <button type="button" class="ml-2 bg-red-500 text-white p-2 rounded" 
+                                    onclick="this.parentElement.remove()">Eliminar</button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="flex mb-2">
+                            <input type="text" name="celiaco_postre_0" value="" 
+                                   class="flex-grow mr-2 p-2 border rounded" placeholder="Nombre del postre sin TACC">
+                            <button type="button" class="ml-2 bg-red-500 text-white p-2 rounded" 
+                                    onclick="this.parentElement.remove()">Eliminar</button>
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="button" class="mt-2 bg-green-200 text-black p-2 rounded"
+                        onclick="addCeliacoItem('postres')">Añadir Postre</button>
+            </div>
+            
+            <!-- Nota importante -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-2">Nota Importante</h3>
+                <textarea name="celiaco_nota" class="w-full p-2 border rounded" rows="3" 
+                          placeholder="Información importante sobre el menú sin TACC">{{ menu.get('menu_especial', {}).get('celiaco', {}).get('nota', '') }}</textarea>
+            </div>
+        </div>
+        
+        <div class="mt-6">
+            <button type="submit" style="background-color: rgb(251, 194, 34); color: black;" 
+                    class="hover:bg-[#e0b12e] font-bold py-2 px-4 rounded">
+                Guardar Menú
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    let diasSemanaGlobal = []; // Added to store dias_semana safely
+
+    function addMenuItem(dia, tipo) {
+        console.log(`Adding menu item for ${dia} ${tipo}`);
+        const container = document.getElementById(`${dia}_${tipo}_items`);
+        console.log('Container:', container);
+        
+        if (!container) {
+            console.error(`Container ${dia}_${tipo}_items not found`);
+            return;
+        }
+        
+        const itemCount = container.children.length;
+        console.log(`Current item count: ${itemCount}`);
+        
+        const newItem = document.createElement('div');
+        newItem.className = 'flex mb-2';
+        newItem.innerHTML = `
+            <input type="text" name="${dia}_${tipo}_nombre_${itemCount}" value="" 
+                   class="flex-grow mr-2 p-2 border rounded" placeholder="Nombre del plato">
+            <input type="text" name="${dia}_${tipo}_precio_${itemCount}" value="" 
+                   class="w-24 p-2 border rounded" placeholder="Precio">
+            <button type="button" class="ml-2 bg-red-500 text-white p-2 rounded" 
+                    onclick="this.parentElement.remove()">Eliminar</button>
+        `;
+        
+        container.appendChild(newItem);
+        console.log('New item added successfully');
+    }
+    
+    function addCeliacoItem(tipo) {
+        const container = document.getElementById(`celiaco_${tipo}_items`);
+        const itemCount = container.children.length;
+        
+        const newItem = document.createElement('div');
+        newItem.className = 'flex mb-2';
+        newItem.innerHTML = `
+            <input type="text" name="celiaco_${tipo === 'platos_principales' ? 'plato_principal' : 'postre'}_${itemCount}" value="" 
+                   class="flex-grow mr-2 p-2 border rounded" placeholder="Nombre del ${tipo === 'platos_principales' ? 'plato' : 'postre'} sin TACC">
+            <button type="button" class="ml-2 bg-red-500 text-white p-2 rounded" 
+                    onclick="this.parentElement.remove()">Eliminar</button>
+        `;
+        
+        container.appendChild(newItem);
+    }
+    
+    function toggleCenaItems(dia, isClosed) {
+        const itemsContainer = document.getElementById(`${dia}_cena_items`);
+        const addButton = document.getElementById(`${dia}_add_cena_btn`);
+        
+        if (isClosed) {
+            itemsContainer.style.display = 'none';
+            if (addButton) addButton.style.display = 'none';
+        } else {
+            itemsContainer.style.display = 'block';
+            if (addButton) addButton.style.display = 'inline-block';
+        }
+    }
+
+    // Function to gather form data and structure it as JSON
+    function prepareMenuData(event) {
+        event.preventDefault(); // Prevent default form submission
+        const form = event.target;
+        const menu = {
+            dias_semana: {},
+            menu_especial: {
+                celiaco: {
+                    platos_principales: [],
+                    postres: [],
+                    nota: ""
+                }
+            }
+        };
+
+        diasSemanaGlobal.forEach(dia => {
+            menu.dias_semana[dia] = { almuerzo: [], cena: [] };
+
+            // Almuerzo
+            const almuerzoContainer = document.getElementById(`${dia}_almuerzo_items`);
+            if (almuerzoContainer) {
+                for (let i = 0; i < almuerzoContainer.children.length; i++) {
+                    const nombreInput = form.elements[`${dia}_almuerzo_nombre_${i}`];
+                    const precioInput = form.elements[`${dia}_almuerzo_precio_${i}`];
+                    if (nombreInput && nombreInput.value.trim() !== "") {
+                        menu.dias_semana[dia].almuerzo.push({
+                            name: nombreInput.value.trim(),
+                            price: precioInput ? precioInput.value.trim() : ""
+                        });
+                    }
+                }
+            }
+
+            // Cena
+            const cenaCerradoCheckbox = form.elements[`${dia}_cena_cerrado`];
+            if (cenaCerradoCheckbox && cenaCerradoCheckbox.checked) {
+                menu.dias_semana[dia].cena = "cerrado";
+            } else {
+                const cenaContainer = document.getElementById(`${dia}_cena_items`);
+                if (cenaContainer) {
+                    for (let i = 0; i < cenaContainer.children.length; i++) {
+                        const nombreInput = form.elements[`${dia}_cena_nombre_${i}`];
+                        const precioInput = form.elements[`${dia}_cena_precio_${i}`];
+                        if (nombreInput && nombreInput.value.trim() !== "") {
+                            menu.dias_semana[dia].cena.push({
+                                name: nombreInput.value.trim(),
+                                price: precioInput ? precioInput.value.trim() : ""
+                            });
+                        }
+                    }
+                }
+            }
+        });
+
+        // Menú Sin TACC / Celíacos
+        const celiacoPlatosContainer = document.getElementById('celiaco_platos_principales_items');
+        if (celiacoPlatosContainer) {
+            for (let i = 0; i < celiacoPlatosContainer.children.length; i++) {
+                const platoInput = form.elements[`celiaco_plato_principal_${i}`];
+                if (platoInput && platoInput.value.trim() !== "") {
+                    menu.menu_especial.celiaco.platos_principales.push(platoInput.value.trim());
+                }
+            }
+        }
+
+        const celiacoPostresContainer = document.getElementById('celiaco_postres_items');
+        if (celiacoPostresContainer) {
+            for (let i = 0; i < celiacoPostresContainer.children.length; i++) {
+                const postreInput = form.elements[`celiaco_postre_${i}`];
+                if (postreInput && postreInput.value.trim() !== "") {
+                    menu.menu_especial.celiaco.postres.push(postreInput.value.trim());
+                }
+            }
+        }
+        
+        const celiacoNotaTextarea = form.elements['celiaco_nota'];
+        if (celiacoNotaTextarea) {
+            menu.menu_especial.celiaco.nota = celiacoNotaTextarea.value.trim();
+        }
+        
+        // Validate menu object and create properly formatted JSON
+        let menuJsonString;
+        try {
+            menuJsonString = JSON.stringify(menu);
+            // Test parse to ensure it's valid JSON
+            JSON.parse(menuJsonString);
+            console.log("Menu JSON to be submitted (first 500 chars):", menuJsonString.substring(0, 500));
+        } catch (e) {
+            console.error("Error creating JSON from menu object:", e);
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'mb-4 p-4 rounded-lg bg-red-100 text-red-800';
+            errorMessage.textContent = `Error al crear JSON del menú: ${e.message}`;
+            form.parentNode.insertBefore(errorMessage, form);
+            return; // Stop submission if JSON is invalid
+        }
+        
+        // Send JSON data using fetch API
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) submitButton.disabled = true; // Disable button to prevent multiple submissions
+        
+        // Log the request details for debugging
+        console.log("Sending request to:", form.action);
+        console.log("Content-Type:", "application/json");
+        console.log("Request body (first 500 chars):", JSON.stringify(menu).substring(0, 500));
+        
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest' // Add this to ensure it's recognized as an AJAX request
+            },
+            body: menuJsonString
+        })
+        .then(response => {
+            console.log("Raw response status:", response.status, response.statusText);
+            
+            // If the response is not ok, we want to get the text to see if it contains useful error info
+            if (!response.ok) {
+                return response.text().then(text => {
+                    try {
+                        // Try to parse as JSON
+                        return JSON.parse(text);
+                    } catch (e) {
+                        // If not JSON, throw with the text
+                        throw new Error(`Server responded with status ${response.status}: ${text}`);
+                    }
+                });
+            }
+            
+            return response.json();
+        })
+        .then(data => {
+            console.log("Response from server:", data);
+            if (data.success) {
+                // Mostrar mensaje de éxito
+                const successMessage = document.createElement('div');
+                successMessage.className = 'mb-4 p-4 rounded-lg bg-green-100 text-green-800';
+                successMessage.textContent = data.message || 'Menú guardado con éxito';
+                form.parentNode.insertBefore(successMessage, form);
+                
+                // Redirigir después de 2 segundos si es necesario
+                setTimeout(() => { 
+                    // Scroll to top to show the success message
+                    window.scrollTo(0, 0);
+                }, 200);
+            } else {
+                // Mostrar mensaje de error
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'mb-4 p-4 rounded-lg bg-red-100 text-red-800';
+                errorMessage.textContent = data.error || 'Error al guardar el menú';
+                form.parentNode.insertBefore(errorMessage, form);
+                
+                console.error('Error details from server:', data);
+            }
+        })
+        .catch(error => {
+            console.error('Error al enviar el menú:', error);
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'mb-4 p-4 rounded-lg bg-red-100 text-red-800';
+            errorMessage.textContent = `Error: ${error.message || 'Error de conexión al guardar el menú'}`;
+            form.parentNode.insertBefore(errorMessage, form);
+        })
+        .finally(() => {
+            if (submitButton) submitButton.disabled = false; // Re-enable button
+        });
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuForm = document.getElementById('menuEditorForm');
+        if (menuForm) {
+            // Retrieve dias_semana from data attribute
+            if (menuForm.dataset.diasSemana) {
+                try {
+                    diasSemanaGlobal = JSON.parse(menuForm.dataset.diasSemana);
+                } catch (e) {
+                    console.error("Error parsing dias_semana from data attribute:", e, menuForm.dataset.diasSemana);
+                    // Fallback to a default list if parsing fails or attribute is malformed
+                    diasSemanaGlobal = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]; 
+                }
+            } else {
+                 console.warn("data-dias-semana attribute not found on menuEditorForm. Falling back to default.");
+                 // Fallback if data attribute is missing
+                 diasSemanaGlobal = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]; 
+            }
+
+            menuForm.addEventListener('submit', prepareMenuData);
+        }
+
+        // Initialize all cena sections based on checkbox state
+        if (diasSemanaGlobal && diasSemanaGlobal.length > 0) {
+            diasSemanaGlobal.forEach(dia => {
+                const checkbox = document.querySelector(`input[name="${dia}_cena_cerrado"]`);
+                if (checkbox) {
+                    toggleCenaItems(dia, checkbox.checked);
+                }
+            });
+        } else {
+            console.warn("diasSemanaGlobal is not populated correctly for initializing cena sections.");
+        }
+    });
+</script>
+{% endblock %}

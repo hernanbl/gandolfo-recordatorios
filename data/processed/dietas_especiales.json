@@ -1,0 +1,25 @@
+{
+  "sin_gluten": {
+    "titulo": "Opciones Sin Gluten / Sin TACC en Gandolfo Restó",
+    "descripcion": "¡Sí! Contamos con varias opciones aptas para celíacos en nuestra carta:",
+    "categorias": {
+      "entradas": [
+        "Provoleta con tomates confitados y rúcula",
+        "Ensalada de la casa (lechuga, tomate, zanahoria, huevo)",
+        "Carpaccio de lomo con rúcula y parmesano"
+      ],
+      "principales": [
+        "Risotto de hongos (consultar disponibilidad)",
+        "Carnes a la parrilla con guarniciones sin gluten",
+        "Pescado a la plancha con vegetales salteados",
+        "Pollo grillado con puré de papas casero"
+      ],
+      "postres": [
+        "Flan casero con dulce de leche",
+        "Helados artesanales (consultar sabores disponibles)",
+        "Frutas de estación"
+      ]
+    },
+    "nota_importante": "Nuestro personal está capacitado para atender las necesidades de personas celíacas. Por favor, menciona tu condición al hacer la reserva para que podamos prepararnos adecuadamente."
+  }
+}

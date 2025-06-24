@@ -1,0 +1,13 @@
+{
+  "reminder_data": {
+    "is_reminder": true,
+    "reserva_id": "0b456b5a-df2d-49b5-a51e-c5418b50c13f",
+    "fecha": "2025-06-03",
+    "hora": "20:00:00",
+    "personas": 2,
+    "nombre": "Luisa Martinez",
+    "enviado_en": "2025-06-02T19:14:20.448818",
+    "conversation_status": "pending"
+  },
+  "timestamp": "2025-06-02T19:14:20.473163"
+}

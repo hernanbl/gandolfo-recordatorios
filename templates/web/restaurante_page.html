@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ restaurant_display_info.name }} - Información y Reservas</title>
+    <!-- Aquí podrías enlazar un CSS general si tienes uno para las páginas públicas -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"> -->
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #5a5a5a; }
+        .info-section p { margin-bottom: 10px; }
+        .info-section strong { color: #007bff; }
+        /* Estilos básicos para el contenedor del chatbot (puedes mejorarlos) */
+        #chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px; /* Ancho del chatbot */
+            height: 500px; /* Alto del chatbot */
+            border: 1px solid #ccc;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            /* Podrías añadir más estilos para el header, body y footer del chat aquí o en chatbox.js */
+            display: flex; /* Para organizar el contenido interno si es necesario */
+            flex-direction: column; /* Para organizar el contenido interno si es necesario */
+        }
+        /* Si chatbox.js no crea su propia UI, necesitarás añadir elementos HTML dentro de #chatbot-container */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bienvenido a {{ restaurant_display_info.name }}</h1>
+        </header>
+
+        <section class="info-section">
+            <h2>Información del Restaurante</h2>
+            <p><strong>Nombre:</strong> {{ restaurant_display_info.name | default('No disponible') }}</p>
+            <p><strong>Teléfono:</strong> {{ restaurant_display_info.phone | default('No disponible') }}</p>
+            <p><strong>WhatsApp:</strong> {{ restaurant_display_info.whatsapp | default('No disponible') }}</p>
+            <p><strong>Dirección:</strong> {{ restaurant_display_info.address | default('No disponible') }}</p>
+            <!-- Puedes añadir más información del restaurante aquí -->
+        </section>
+
+        <!-- Contenedor donde se montará el chatbot -->
+        <!-- chatbox.js debería encargarse de generar la UI interna del chat aquí -->
+        <div id="chatbot-container">
+            <p style="padding:10px; text-align:center;">Cargando chatbot...</p>
+        </div>
+    </div>
+
+    <script>
+        // Inyectar la configuración del chatbot para que chatbox.js la pueda usar
+        const chatbotConfig = {{ chatbot_js_config | tojson }};
+        
+        // Para depuración en la consola del navegador (puedes comentar esto en producción)
+        console.log("Chatbot Config para {{ restaurant_display_info.name }}:", chatbotConfig);
+    </script>
+    <!-- Enlace al script principal del chatbot -->
+    <!-- Asegúrate que la ruta a chatbox.js sea correcta y que el archivo exista en static/js/ -->
+    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script> 
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "reservation_state": "esperando_nombre",
+  "reservation_data": {
+    "fecha": "29/05/2025",
+    "hora": "08:00",
+    "personas": 4
+  },
+  "timestamp": "2025-05-28T19:28:27.787222"
+}

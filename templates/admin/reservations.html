@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla de Reservas - </title>
+    <link rel="icon" type="image/x-icon" href="../static/img/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <style>
+        /* Estilos para las filas de la tabla */
+        .odd {
+            background-color: white !important;
+        }
+        .even {
+            background-color: #fff9e6 !important;
+        }
+        
+        /* Estilos para ajustar el ancho de las columnas */
+        #reservationsTable th:nth-child(1) { width: 5%; }  /* ID */
+        #reservationsTable th:nth-child(2) { width: 15%; } /* Nombre */
+        #reservationsTable th:nth-child(3) { width: 10%; } /* Fecha */
+        #reservationsTable th:nth-child(4) { width: 8%; }  /* Hora */
+        #reservationsTable th:nth-child(5) { width: 6%; }  /* Personas - más angosta */
+        #reservationsTable th:nth-child(6) { width: 12%; } /* Teléfono */
+        #reservationsTable th:nth-child(7) { width: 15%; } /* Email */
+        #reservationsTable th:nth-child(8) { width: 10%; } /* Estado */
+        #reservationsTable th:nth-child(9) { width: 19%; } /* Acciones - más espacio */
+        
+        /* Espaciado adicional para toda la tabla */
+        .table-container {
+            margin: 0 -1rem;
+        }
+        
+        /* Ajustar el padding de las celdas */
+        #reservationsTable td {
+            padding: 8px 4px !important;
+            word-wrap: break-word;
+        }
+        
+        #reservationsTable th {
+            padding: 8px 4px !important;
+        }
+        
+        /* Hacer que los botones sean más compactos */
+        .status-select {
+            font-size: 0.875rem;
+            padding: 4px 6px;
+            min-width: 120px;
+        }
+        
+        .view-details {
+            font-size: 0.875rem;
+            padding: 4px 8px;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body style="background-color: rgb(227, 230, 230);" class="flex flex-col min-h-screen">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-white shadow-md">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">             
+                <div class="flex items-center">
+                    <img src="/static/img/logo.png" alt="Gandolfo Restaurant" class="h-10 w-auto mr-3">
+                </div>
+                <div class="flex items-center">
+                    <div class="mr-4 text-gray-700">Bienvenido, <span class="font-semibold">{{ username }}</span></div>
+                    <a href="/admin/logout" style="background-color: #fbc222; color: black;" class="hover:bg-[#e0b12e] font-bold py-2 px-4 rounded">
+                        Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-2 sm:px-4 py-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6" style="padding: 10px;">Tabla de Reservas</h1>
+            <div class="flex space-x-3">
+                <a href="/admin/calendar" class="bg-[#CCCC99] hover:bg-[#b8b889] font-bold py-2 px-4 rounded" style="color: rgb(92, 101, 42);">
+                    Ver Calendario
+                </a>
+                <a href="/admin/dashboard" class="bg-[#CCCC99] hover:bg-[#b8b889] font-bold py-2 px-4 rounded" style="color: rgb(92, 101, 42);">
+                    Volver al Dashboard
+                </a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md overflow-hidden table-container">
+            <div style="background-color: rgb(219, 224, 195);" class="px-4 py-2">
+                <h2 class="text-xl font-bold" style="color: rgb(92, 101, 42);">Reservas</h2>
+            </div>
+            <div class="p-2 overflow-x-auto">
+                <table id="reservationsTable" class="w-full table-auto">
+                    <thead>
+                        <tr class="bg-[#dbe0c3]">
+                            <th class="px-2 py-2 text-center">ID</th>
+                            <th class="px-2 py-2 text-left">Nombre</th>
+                            <th class="px-2 py-2 text-center">Fecha</th>
+                            <th class="px-2 py-2 text-center">Hora</th>
+                            <th class="px-2 py-2 text-center">Pers.</th>
+                            <th class="px-2 py-2 text-left">Teléfono</th>
+                            <th class="px-2 py-2 text-left">Email</th>
+                            <th class="px-2 py-2 text-center">Estado</th>
+                            <th class="px-2 py-2 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in reservas %}
+                        <tr class="border-b {% if loop.index is even %}bg-[#fff9e6]{% endif %}">
+                            <td class="px-2 py-2 text-center">{{ reserva.id }}</td>
+                            <td class="px-2 py-2">{{ reserva.nombre_cliente|default(reserva.nombre, 'Sin nombre') }}</td>
+                            <td class="px-2 py-2 text-center">{{ reserva.fecha }}</td>
+                            <td class="px-2 py-2 text-center">{{ reserva.hora }}</td>
+                            <td class="px-2 py-2 text-center font-semibold">{{ reserva.personas }}</td>
+                            <td class="px-2 py-2">{{ reserva.telefono }}</td>
+                            <td class="px-2 py-2">{{ reserva.email }}</td>
+                            <td class="px-2 py-2 text-center">
+                                <span class="px-2 py-1 rounded text-sm font-medium
+                                    {% if reserva.estado == 'Confirmada' %}bg-[#28a745] text-white
+                                    {% elif reserva.estado == 'Cancelada' %}bg-[#dc3545] text-white
+                                    {% elif reserva.estado == 'No asistió' %}bg-[#17a2b8] text-white
+                                    {% else %}bg-[#ffff00] text-[#000000]{% endif %}">
+                                    {{ reserva.estado|default('Pendiente') }}
+                                </span>
+                            </td>
+                            <td class="px-2 py-2">
+                                <div class="flex flex-col space-y-1">
+                                    <select class="status-select border rounded px-2 py-1 text-xs" data-id="{{ reserva.id }}">
+                                        <option value="">Cambiar estado</option>
+                                        <option value="Confirmada">Confirmar</option>
+                                        <option value="Cancelada">Cancelar</option>
+                                        <option value="No asistió">No asistió</option>
+                                        <option value="Pendiente">Pendiente</option>
+                                    </select>
+                                    <button class="view-details px-2 py-1 rounded text-xs w-full" 
+                                            style="background-color: rgb(92, 101, 42); color: rgb(219, 224, 195);"
+                                            data-id="{{ reserva.id }}">
+                                        Detalles
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalles -->
+    <div id="detailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold" style="color: rgb(92, 101, 42);">Detalles de la Reserva</h2>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="modalContent" class="space-y-4">
+                <!-- El contenido se llenará dinámicamente -->
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button id="closeModalBtn" class="bg-[#CCCC99] hover:bg-[#b8b889] font-bold py-2 px-4 rounded" style="color: rgb(92, 101, 42);">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Obtener la fecha actual en formato YYYY-MM-DD
+            const today = new Date();
+            const formattedToday = today.toISOString().split('T')[0];
+            
+            // Inicializar DataTable con opciones mejoradas
+            const table = $('#reservationsTable').DataTable({
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
+                },
+                order: [[2, 'asc']], // Ordenar por fecha (columna 2) ascendente
+                pageLength: 25,
+                lengthMenu: [10, 25, 50, 100],
+                responsive: true,
+                stateSave: true,
+                stripeClasses: ['odd', 'even'], // Usar nuestras clases personalizadas
+                rowCallback: function(row, data, index) {
+                    // Mantener el fondo alternado
+                    $(row).removeClass('bg-white bg-[#fff9e6]');
+                    if (index % 2 === 0) {
+                        $(row).addClass('odd');
+                    } else {
+                        $(row).addClass('even');
+                    }
+                },
+                drawCallback: function() {
+                    // Asegurar que la tabla se redibuja correctamente
+                    $(window).trigger('resize');
+                },
+                // Filtrar reservas anteriores a hoy
+                initComplete: function() {
+                    // Crear un filtro personalizado para fechas
+                    $.fn.dataTable.ext.search.push(
+                        function(settings, data, dataIndex) {
+                            // La fecha está en la columna 2 (índice 2)
+                            const reservaFecha = data[2];
+                            
+                            // Si no hay fecha, mostrar la fila
+                            if (!reservaFecha) return true;
+                            
+                            // Convertir la fecha de la reserva al formato comparable
+                            try {
+                                // Asumiendo que la fecha viene en formato YYYY-MM-DD
+                                return reservaFecha >= formattedToday;
+                            } catch (e) {
+                                console.error('Error al comparar fechas:', e);
+                                return true; // En caso de error, mostrar la fila
+                            }
+                        }
+                    );
+                    
+                    // Aplicar el filtro
+                    table.draw();
+                }
+            });
+            
+            // Manejar cambio de estado
+            $('.status-select').change(function() {
+                const reservaId = $(this).data('id');
+                const nuevoEstado = $(this).val();
+                const row = $(this).closest('tr');
+                const fecha = row.find('td:eq(2)').text().trim();
+                const personas = parseInt(row.find('td:eq(4)').text());
+                
+                if (!nuevoEstado) return;
+                
+                // Para todos los estados, actualizar directamente sin verificar capacidad
+                updateReservationStatus(reservaId, nuevoEstado);
+                
+                /* Comentamos temporalmente la verificación de capacidad
+                // Si estamos confirmando una reserva, verificar la capacidad
+                if (nuevoEstado === 'Confirmada') {
+                    console.log('Verificando capacidad para reserva:', reservaId, 'fecha:', fecha, 'personas:', personas);
+                    
+                    // Formatear la fecha correctamente (YYYY-MM-DD)
+                    const fechaPartes = fecha.split('-');
+                    const fechaFormateada = fechaPartes.length === 3 ? fecha : null;
+                    
+                    if (!fechaFormateada) {
+                        console.error('Formato de fecha inválido:', fecha);
+                        if (confirm('No se pudo procesar el formato de fecha. ¿Desea confirmar la reserva de todos modos?')) {
+                            updateReservationStatus(reservaId, nuevoEstado);
+                        }
+                        return;
+                    }
+                    
+                    // Verificar capacidad del restaurante para esa fecha
+                    const requestData = {
+                        id: reservaId,
+                        fecha: fechaFormateada,
+                        personas: personas
+                    };
+                    
+                    console.log('Enviando datos:', JSON.stringify(requestData));
+                    
+                    fetch('/admin/api/check_capacity', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(requestData)
+                    })
+                    .then(response => {
+                        console.log('Respuesta del servidor:', response.status, response.statusText);
+                        return response.text().then(text => {
+                            try {
+                                // Intentar parsear como JSON
+                                const data = text ? JSON.parse(text) : {};
+                                console.log('Respuesta parseada:', data);
+                                return data;
+                            } catch (e) {
+                                // Si no es JSON válido, mostrar el texto
+                                console.error('Respuesta no es JSON válido:', text);
+                                throw new Error('Respuesta del servidor no es JSON válido');
+                            }
+                        });
+                    })
+                    .then(data => {
+                        console.log('Datos recibidos:', data);
+                        if (data.success) {
+                            // Si hay capacidad, proceder con la actualización
+                            updateReservationStatus(reservaId, nuevoEstado);
+                        } else {
+                            // Si no hay capacidad, mostrar mensaje de error
+                            alert(`No se puede confirmar la reserva: ${data.message || 'Se excedería la capacidad del restaurante (80 personas)'}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al verificar capacidad:', error);
+                        // En caso de error, intentar actualizar directamente
+                        if (confirm('Hubo un error al verificar la capacidad. ¿Desea confirmar la reserva de todos modos?')) {
+                            updateReservationStatus(reservaId, nuevoEstado);
+                        }
+                    });
+                } else {
+                    // Para otros estados, actualizar directamente
+                    updateReservationStatus(reservaId, nuevoEstado);
+                }
+                */
+            });
+            
+            // Función para actualizar el estado de la reserva
+            function updateReservationStatus(reservaId, nuevoEstado) {
+                fetch('/admin/api/update_reservation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: reservaId,
+                        estado: nuevoEstado
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la respuesta del servidor');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert('Estado actualizado correctamente');
+                        location.reload();
+                    } else {
+                        alert('Error al actualizar estado: ' + (data.error || 'Error desconocido'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al procesar la solicitud:', error);
+                    alert('Error al procesar la solicitud: ' + error);
+                });
+            }
+            
+            // Manejar clic en botón de detalles
+            $('.view-details').click(function() {
+                const reservaId = $(this).data('id');
+                
+                // Buscar la reserva en la tabla
+                const row = $(this).closest('tr');
+                const nombre = row.find('td:eq(1)').text();
+                const fecha = row.find('td:eq(2)').text();
+                const hora = row.find('td:eq(3)').text();
+                const personas = row.find('td:eq(4)').text();
+                const telefono = row.find('td:eq(5)').text();
+                const email = row.find('td:eq(6)').text();
+                const estado = row.find('td:eq(7)').text().trim();
+                
+                // Llenar el modal con los detalles
+                let modalHTML = `
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="font-semibold">ID:</div>
+                        <div>${reservaId}</div>
+                        
+                        <div class="font-semibold">Nombre:</div>
+                        <div>${nombre}</div>
+                        
+                        <div class="font-semibold">Fecha:</div>
+                        <div>${fecha}</div>
+                        
+                        <div class="font-semibold">Hora:</div>
+                        <div>${hora}</div>
+                        
+                        <div class="font-semibold">Personas:</div>
+                        <div>${personas}</div>
+                        
+                        <div class="font-semibold">Teléfono:</div>
+                        <div>${telefono}</div>
+                        
+                        <div class="font-semibold">Email:</div>
+                        <div>${email}</div>
+                        
+                        <div class="font-semibold">Estado:</div>
+                        <div>${estado}</div>
+                    </div>
+                `;
+                
+                // Mostrar el modal
+                $('#modalContent').html(modalHTML);
+                $('#detailsModal').removeClass('hidden');
+            });
+            
+            // Cerrar modal
+            $('#closeModal, #closeModalBtn').click(function() {
+                $('#detailsModal').addClass('hidden');
+            });
+            
+            // También cerrar modal al hacer clic fuera de él
+            $('#detailsModal').click(function(e) {
+                if (e.target === this) {
+                    $(this).addClass('hidden');
+                }
+            });
+        });
+    </script>
+
+    <footer class="bg-white border-t border-gray-200 py-4 mt-auto">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            © 2025 Gandolfo. Un desarrollo de <a href="https://gandolfo.app/" class="text-green-800 hover:text-green-1000">
+                &nbsp;&nbsp;<img src="/static/img/logo-vivacom_gris.png" alt="Gandolfo" class="h-4 inline-block">
+            </a>
+        </div>
+    </footer>
+</html>

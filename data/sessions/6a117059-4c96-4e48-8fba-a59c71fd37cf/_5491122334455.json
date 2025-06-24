@@ -1,0 +1,10 @@
+{
+  "phone_number": "+5491122334455",
+  "restaurant_id": "6a117059-4c96-4e48-8fba-a59c71fd37cf",
+  "created_at": "2025-06-22T16:17:00.000Z",
+  "last_activity": "2025-06-22T16:17:00.000Z",
+  "reservation_state": "completada",
+  "reservation_data": {},
+  "nombre_completo": "Juan Pérez",
+  "timestamp": "2025-06-22T14:20:39.767673"
+}

@@ -1,0 +1,79 @@
+# Entorno virtual
+venv/
+env/
+ENV/
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Variables de entorno
+.env
+
+# Logs
+*.log
+
+# Archivos de sistema
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Archivos de entorno y configuración
+.env
+*.env
+__pycache__/
+*.py[cod]
+*$py.class
+.DS_Store
+
+# Directorios virtuales
+venv/
+env/
+ENV/
+
+# Logs
+logs/
+*.log
+
+# Archivos de base de datos
+*.db
+*.sqlite3
+
+# Archivos de configuración con información sensible
+# Nota: Asegúrate de no incluir credenciales en tu repositorio
+# config/credentials.json
+
+# Directorios de caché
+.cache/
+.pytest_cache/
+
+# VS Code configuración con tokens
+.vscode/mcp.json
+
+# Archivos con credenciales y datos sensibles
+VARIABLES_ENTORNO_RENDER.md
+data/info/*_info.json
+data/feedback.json
+.vscode/mcp.json

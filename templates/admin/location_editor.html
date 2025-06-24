@@ -1,0 +1,961 @@
+{% extends "admin/base.html" %}
+{% block title %}Editor de Información General -  Admin{% endblock %}
+
+{% block head_extra %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/lint/lint.min.css">
+    <!-- Custom style block removed, Tailwind CSS will be used -->
+{% endblock %}
+
+{% block content %}
+
+    <main class="flex-grow p-4 transition-all duration-300">
+        <div id="successMessage" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <strong class="font-bold">Éxito!</strong>
+            <span class="block sm:inline"></span>
+        </div>
+        <div id="errorMessage" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <strong class="font-bold">Error!</strong>
+            <span class="block sm:inline"></span>
+        </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Editor de Información General del Restaurante</h1>
+            <div class="button-container flex space-x-2">
+                
+                <!-- Temporalmente oculto
+                <button id="toggleView" class="bg-yellow-500 hover:bg-yellow-600 text-yellow-900 font-semibold py-2 px-4 rounded-md shadow-sm text-sm">
+                    Ver/Editar JSON
+                </button>
+                -->
+                <button id="saveButton" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm text-sm">
+                    Guardar Cambios
+                </button>
+                <button id="resetButton" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm text-sm">
+                    Restablecer
+                </button>
+            </div>
+        </div>
+
+        <div id="formView">
+            <!-- Removed outer p-4, sections will handle their padding -->
+            <form id="restaurantForm" class="space-y-8">
+                <!-- Información básica -->
+                <div id="info-basica" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-800 pb-3 border-b border-gray-200 flex items-center">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Información Básica
+                    </h3>
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Restaurante</label>
+                        <input type="text" name="name" id="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3 bg-gray-50">
+                    </div>
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                        <textarea name="description" id="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3 bg-gray-50"></textarea>
+                    </div>
+                </div>
+
+                <!-- Ubicación -->
+                <div id="ubicacion" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-800 pb-3 border-b border-gray-200 flex items-center">
+                        <i class="fas fa-map-marked-alt mr-2"></i>
+                        Ubicación
+                    </h3>
+                    <div>
+                        <label for="location.address" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                        <input type="text" name="location.address" id="location.address" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3 bg-gray-50">
+                    </div>
+                    <div>
+                        <label for="location.google_maps_link" class="block text-sm font-medium text-gray-700 mb-1">Enlace de Google Maps</label>
+                        <input type="text" name="location.google_maps_link" id="location.google_maps_link" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3 bg-gray-50">
+                    </div>
+                    <div class="mt-2"> <!-- Adjusted margin -->
+                        <label class="flex items-center text-sm font-medium text-gray-700">
+                            <input type="checkbox" name="config.mostrar_ubicacion_mapa" id="config.mostrar_ubicacion_mapa" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 focus:ring-offset-0 mr-2 h-4 w-4">
+                            Mostrar mapa de ubicación en la web
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Contacto -->
+                <div id="contacto" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-800 pb-3 border-b border-gray-200 flex items-center">
+                        <i class="fas fa-phone-alt mr-2"></i>
+                        Contacto
+                    </h3>
+                    <div>
+                        <label for="contact.phone" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                        <input type="text" name="contact.phone" id="contact.phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3 bg-gray-50">
+                    </div>
+                    <div>
+                        <label for="contact.email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" name="contact.email" id="contact.email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3 bg-gray-50">
+                    </div>
+                </div>
+
+                <!-- Cómo Llegar -->
+                <div id="como-llegar" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-800 pb-3 border-b border-gray-200 flex items-center">
+                        <i class="fas fa-directions mr-2"></i>
+                        Cómo Llegar
+                    </h3>
+                    <div>
+                        <label for="como_llegar.texto_transporte_publico" class="block text-sm font-medium text-gray-700 mb-1">Transporte Público</label>
+                        <textarea name="como_llegar.texto_transporte_publico" id="como_llegar.texto_transporte_publico" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3 bg-gray-50"></textarea>
+                    </div>
+                    <div>
+                        <label for="como_llegar.texto_auto" class="block text-sm font-medium text-gray-700 mb-1">En Auto</label>
+                        <textarea name="como_llegar.texto_auto" id="como_llegar.texto_auto" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3 bg-gray-50"></textarea>
+                    </div>
+                </div>
+
+                <!-- Horarios -->
+                <div id="horarios" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-800 pb-3 border-b border-gray-200 flex items-center">
+                        <i class="fas fa-clock mr-2"></i>
+                        Horarios de Apertura
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for day in ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'] %}
+                        <div class="border p-4 rounded-md bg-gray-50 shadow-sm space-y-2">
+                            <p class="font-semibold capitalize text-gray-700">{{ day }}</p>
+                            <div>
+                                <label for="opening_hours.{{day}}.open" class="block text-xs font-medium text-gray-600 mb-0.5">Abre</label>
+                                <input type="time" name="opening_hours.{{day}}.open" id="opening_hours.{{day}}.open" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm py-1.5 px-2 bg-white">
+                            </div>
+                            <div>
+                                <label for="opening_hours.{{day}}.close" class="block text-xs font-medium text-gray-600 mb-0.5">Cierra</label>
+                                <input type="time" name="opening_hours.{{day}}.close" id="opening_hours.{{day}}.close" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm py-1.5 px-2 bg-white">
+                            </div>
+                            <label class="flex items-center text-xs font-medium text-gray-600 pt-1">
+                                <input type="checkbox" name="opening_hours.{{day}}.is_closed" id="opening_hours.{{day}}.is_closed" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 focus:ring-offset-0 mr-1.5 h-3.5 w-3.5">
+                                Cerrado este día
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Métodos de Pago -->
+                <div id="metodos-pago" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-800 pb-3 border-b border-gray-200 flex items-center">
+                        <i class="fas fa-credit-card mr-2"></i>
+                        Métodos de Pago Aceptados
+                    </h3>
+                    <div id="paymentMethodsContainer" class="space-y-3">
+                        <!-- Los métodos de pago se agregarán aquí dinámicamente -->
+                    </div>
+                    <button type="button" id="addPaymentMethod" class="bg-green-500 hover:bg-green-600 text-white py-2 px-3 text-sm rounded font-medium mt-2 inline-flex items-center">
+                        <i class="fas fa-plus mr-1.5"></i>Añadir Método de Pago
+                    </button>
+                </div>
+
+                <!-- Promociones de Pago -->
+                <div id="promociones" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-800 pb-3 border-b border-gray-200 flex items-center">
+                        <i class="fas fa-tags mr-2"></i>
+                        Promociones de Pago
+                    </h3>
+                    <div id="promocionesContainer" class="space-y-4">
+                        <!-- Las promociones se agregarán aquí dinámicamente -->
+                    </div>
+                    <button type="button" id="addPromocion" class="bg-green-500 hover:bg-green-600 text-white py-2 px-3 text-sm rounded font-medium mt-2 inline-flex items-center">
+                         <i class="fas fa-plus mr-1.5"></i>Añadir Promoción
+                    </button>
+                </div>
+
+                <!-- Políticas del Restaurante -->
+                <div id="politicas" class="bg-white p-6 rounded-lg shadow-md space-y-6">
+                    <h3 class="text-xl font-semibold text-gray-800 pb-3 border-b border-gray-200 flex items-center">
+                        <i class="fas fa-clipboard-list mr-2"></i>
+                        Políticas del Restaurante
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Estas políticas se usan para responder automáticamente a preguntas frecuentes de los clientes.</p>
+                    
+                    <!-- Mascotas -->
+                    <div class="border border-gray-200 rounded-lg p-4 space-y-3">
+                        <h4 class="font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-paw mr-2"></i>Mascotas
+                        </h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" name="policies.pets.allowed" id="policies.pets.allowed" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 mr-2">
+                                Se permiten mascotas
+                            </label>
+                            <div>
+                                <label for="policies.pets.restrictions" class="block text-sm font-medium text-gray-700 mb-1">Restricciones (opcional)</label>
+                                <input type="text" name="policies.pets.restrictions" id="policies.pets.restrictions" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" placeholder="Ej: Solo en la terraza">
+                            </div>
+                            <div>
+                                <label for="policies.pets.description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                <textarea name="policies.pets.description" id="policies.pets.description" rows="2" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" placeholder="Mensaje que se enviará a los clientes"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Niños -->
+                    <div class="border border-gray-200 rounded-lg p-4 space-y-3">
+                        <h4 class="font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-child mr-2"></i>Niños
+                        </h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" name="policies.children.allowed" id="policies.children.allowed" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 mr-2">
+                                Apto para niños
+                            </label>
+                            <div>
+                                <label for="policies.children.description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                <textarea name="policies.children.description" id="policies.children.description" rows="2" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" placeholder="Ej: Contamos con menú infantil y ambiente familiar"></textarea>
+                            </div>
+                            <div>
+                                <label for="policies.children.amenities" class="block text-sm font-medium text-gray-700 mb-1">Comodidades (separadas por comas)</label>
+                                <input type="text" name="policies.children.amenities" id="policies.children.amenities" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" placeholder="Ej: menú infantil, sillas altas, cambiador">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Accesibilidad -->
+                    <div class="border border-gray-200 rounded-lg p-4 space-y-3">
+                        <h4 class="font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-wheelchair mr-2"></i>Accesibilidad
+                        </h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" name="policies.accessibility.wheelchair_accessible" id="policies.accessibility.wheelchair_accessible" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 mr-2">
+                                Accesible para sillas de ruedas
+                            </label>
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" name="policies.accessibility.braille_menu" id="policies.accessibility.braille_menu" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 mr-2">
+                                Menú en Braille disponible
+                            </label>
+                            <div>
+                                <label for="policies.accessibility.description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                <textarea name="policies.accessibility.description" id="policies.accessibility.description" rows="2" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" placeholder="Información adicional sobre accesibilidad"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opciones Dietéticas -->
+                    <div class="border border-gray-200 rounded-lg p-4 space-y-3">
+                        <h4 class="font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-leaf mr-2"></i>Opciones Dietéticas
+                        </h4>
+                        <div class="space-y-2">
+                            <div class="flex flex-wrap gap-4">
+                                <label class="flex items-center text-sm">
+                                    <input type="checkbox" name="policies.dietary_options.vegetarian" id="policies.dietary_options.vegetarian" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 mr-2">
+                                    Vegetariano
+                                </label>
+                                <label class="flex items-center text-sm">
+                                    <input type="checkbox" name="policies.dietary_options.vegan" id="policies.dietary_options.vegan" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 mr-2">
+                                    Vegano
+                                </label>
+                                <label class="flex items-center text-sm">
+                                    <input type="checkbox" name="policies.dietary_options.gluten_free" id="policies.dietary_options.gluten_free" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 mr-2">
+                                    Sin Gluten (Sin TACC)
+                                </label>
+                            </div>
+                            <div>
+                                <label for="policies.dietary_options.description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                <textarea name="policies.dietary_options.description" id="policies.dietary_options.description" rows="2" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" placeholder="Información sobre opciones dietéticas disponibles"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estacionamiento -->
+                    <div class="border border-gray-200 rounded-lg p-4 space-y-3">
+                        <h4 class="font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-parking mr-2"></i>Estacionamiento
+                        </h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" name="policies.parking.available" id="policies.parking.available" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 mr-2">
+                                Estacionamiento disponible
+                            </label>
+                            <div>
+                                <label for="policies.parking.type" class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                                <select name="policies.parking.type" id="policies.parking.type" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3">
+                                    <option value="propio">Propio</option>
+                                    <option value="publico">Público</option>
+                                    <option value="valet">Valet</option>
+                                    <option value="otro">Otro</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="policies.parking.description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                <textarea name="policies.parking.description" id="policies.parking.description" rows="2" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" placeholder="Información sobre estacionamiento"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Código de Vestimenta -->
+                    <div class="border border-gray-200 rounded-lg p-4 space-y-3">
+                        <h4 class="font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-tshirt mr-2"></i>Código de Vestimenta
+                        </h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" name="policies.dress_code.required" id="policies.dress_code.required" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 mr-2">
+                                Código de vestimenta requerido
+                            </label>
+                            <div>
+                                <label for="policies.dress_code.style" class="block text-sm font-medium text-gray-700 mb-1">Estilo</label>
+                                <select name="policies.dress_code.style" id="policies.dress_code.style" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3">
+                                    <option value="casual">Casual</option>
+                                    <option value="smart-casual">Smart Casual</option>
+                                    <option value="formal">Formal</option>
+                                    <option value="elegante">Elegante</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="policies.dress_code.description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                <textarea name="policies.dress_code.description" id="policies.dress_code.description" rows="2" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" placeholder="Información sobre el código de vestimenta"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fumar -->
+                    <div class="border border-gray-200 rounded-lg p-4 space-y-3">
+                        <h4 class="font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-smoking-ban mr-2"></i>Política de Fumar
+                        </h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" name="policies.smoking.allowed" id="policies.smoking.allowed" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 mr-2">
+                                Se permite fumar en el interior
+                            </label>
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" name="policies.smoking.outdoor_allowed" id="policies.smoking.outdoor_allowed" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 mr-2">
+                                Se permite fumar en área exterior
+                            </label>
+                            <div>
+                                <label for="policies.smoking.description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                <textarea name="policies.smoking.description" id="policies.smoking.description" rows="2" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" placeholder="Información sobre la política de fumar"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cancelaciones -->
+                    <div class="border border-gray-200 rounded-lg p-4 space-y-3">
+                        <h4 class="font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-calendar-times mr-2"></i>Política de Cancelación
+                        </h4>
+                        <div class="space-y-2">
+                            <div>
+                                <label for="policies.cancellation.advance_notice_hours" class="block text-sm font-medium text-gray-700 mb-1">Horas de anticipación requeridas</label>
+                                <input type="number" name="policies.cancellation.advance_notice_hours" id="policies.cancellation.advance_notice_hours" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" min="0" max="48" placeholder="4">
+                            </div>
+                            <div>
+                                <label for="policies.cancellation.policy" class="block text-sm font-medium text-gray-700 mb-1">Política</label>
+                                <input type="text" name="policies.cancellation.policy" id="policies.cancellation.policy" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" placeholder="Ej: Las reservas pueden cancelarse hasta 4 horas antes sin cargo">
+                            </div>
+                            <div>
+                                <label for="policies.cancellation.description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                <textarea name="policies.cancellation.description" id="policies.cancellation.description" rows="2" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" placeholder="Información adicional sobre cancelaciones"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nivel de Ruido -->
+                    <div class="border border-gray-200 rounded-lg p-4 space-y-3">
+                        <h4 class="font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-volume-down mr-2"></i>Nivel de Ruido
+                        </h4>
+                        <div class="space-y-2">
+                            <div>
+                                <label for="policies.noise_level.level" class="block text-sm font-medium text-gray-700 mb-1">Nivel</label>
+                                <select name="policies.noise_level.level" id="policies.noise_level.level" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3">
+                                    <option value="bajo">Bajo</option>
+                                    <option value="moderado">Moderado</option>
+                                    <option value="alto">Alto</option>
+                                    <option value="muy alto">Muy Alto</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="policies.noise_level.description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                <textarea name="policies.noise_level.description" id="policies.noise_level.description" rows="2" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" placeholder="Descripción del ambiente sonoro"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reservas Grupales -->
+                    <div class="border border-gray-200 rounded-lg p-4 space-y-3">
+                        <h4 class="font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-users mr-2"></i>Reservas Grupales
+                        </h4>
+                        <div class="space-y-2">
+                            <div>
+                                <label for="policies.group_reservations.max_size" class="block text-sm font-medium text-gray-700 mb-1">Tamaño máximo del grupo</label>
+                                <input type="number" name="policies.group_reservations.max_size" id="policies.group_reservations.max_size" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" min="1" max="100" placeholder="20">
+                            </div>
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" name="policies.group_reservations.advance_booking_required" id="policies.group_reservations.advance_booking_required" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 mr-2">
+                                Reserva anticipada requerida
+                            </label>
+                            <div>
+                                <label for="policies.group_reservations.description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                <textarea name="policies.group_reservations.description" id="policies.group_reservations.description" rows="2" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3" placeholder="Información sobre reservas grupales"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuración General -->
+                <div id="configuracion-general" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-800 pb-3 border-b border-gray-200 flex items-center">
+                        <i class="fas fa-cog mr-2"></i>
+                        Configuración General
+                    </h3>
+                    <div class="mt-2"> <!-- Adjusted margin -->
+                        <label class="flex items-center text-sm font-medium text-gray-700">
+                            <input type="checkbox" name="config.activo" id="config.activo" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500 focus:ring-offset-0 mr-2 h-4 w-4">
+                            Restaurante Activo (visible en la web pública)
+                        </label>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <div id="jsonView" class="mt-8 p-6 rounded-lg shadow-md bg-gray-800 text-white" style="display: none;">
+            <textarea id="jsonEditor"></textarea>
+        </div>
+    </div>
+</main>
+
+    <!-- Scripts necesarios para el funcionamiento básico -->
+    
+    <script>
+        let editor;
+        let restaurantData = {}; // Variable global para almacenar los datos del restaurante
+
+        function loadRestaurantData() {
+            fetch('/admin/get_restaurant_info')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        restaurantData = result.data;
+                        populateForm(restaurantData);
+                    } else {
+                        showNotification('Error al cargar datos: ' + (result.error || 'Error desconocido'), 'error');
+                        restaurantData = getDefaultRestaurantData();
+                        populateForm(restaurantData);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching restaurant data:', error);
+                    showNotification('Error de red al cargar datos. Usando valores por defecto.', 'error');
+                    restaurantData = getDefaultRestaurantData();
+                    populateForm(restaurantData);
+                });
+        }
+
+        function getDefaultRestaurantData() {
+            return {
+                name: "",
+                description: "",
+                location: { 
+                    address: "", 
+                    google_maps_link: "" 
+                },
+                contact: { 
+                    phone: "", 
+                    email: ""
+                },
+                como_llegar: {
+                    texto_transporte_publico: "",
+                    texto_auto: ""
+                },
+                opening_hours: {
+                    lunes: { open: "12:00", close: "23:00", is_closed: false },
+                    martes: { open: "12:00", close: "23:00", is_closed: false },
+                    miercoles: { open: "12:00", close: "23:00", is_closed: false },
+                    jueves: { open: "12:00", close: "23:00", is_closed: false },
+                    viernes: { open: "12:00", close: "23:00", is_closed: false },
+                    sabado: { open: "12:00", close: "23:00", is_closed: false },
+                    domingo: { open: "12:00", close: "16:00", is_closed: false }
+                },
+                payment_methods: [],
+                promotions: [],
+                policies: {
+                    pets: {
+                        allowed: false,
+                        restrictions: "",
+                        description: ""
+                    },
+                    children: {
+                        allowed: true,
+                        description: "",
+                        amenities: []
+                    },
+                    accessibility: {
+                        wheelchair_accessible: false,
+                        braille_menu: false,
+                        description: ""
+                    },
+                    dietary_options: {
+                        vegetarian: false,
+                        vegan: false,
+                        gluten_free: false,
+                        description: ""
+                    },
+                    parking: {
+                        available: false,
+                        type: "propio",
+                        description: ""
+                    },
+                    dress_code: {
+                        required: false,
+                        style: "casual",
+                        description: ""
+                    },
+                    smoking: {
+                        allowed: false,
+                        outdoor_allowed: false,
+                        description: ""
+                    },
+                    cancellation: {
+                        advance_notice_hours: 4,
+                        policy: "",
+                        description: ""
+                    },
+                    noise_level: {
+                        level: "moderado",
+                        description: ""
+                    },
+                    group_reservations: {
+                        max_size: 20,
+                        advance_booking_required: false,
+                        description: ""
+                    }
+                },
+                config: {
+                    activo: true,
+                    mostrar_ubicacion_mapa: true
+                }
+            };
+        }
+
+        function populateForm(data) {
+            console.log('DEBUG: populateForm called with data:', data);
+            if (!data) data = getDefaultRestaurantData();
+
+            console.log('DEBUG: Setting name:', data.name);
+            document.getElementById('name').value = data.name || '';
+            console.log('DEBUG: Setting description:', data.description);
+            document.getElementById('description').value = data.description || '';
+
+            console.log('DEBUG: Setting address:', data.location?.address);
+            document.getElementById('location.address').value = data.location?.address || '';
+            document.getElementById('location.google_maps_link').value = data.location?.google_maps_link || '';
+            
+            console.log('DEBUG: Setting phone:', data.contact?.phone);
+            console.log('DEBUG: Setting email:', data.contact?.email);
+            document.getElementById('contact.phone').value = data.contact?.phone || '';
+            document.getElementById('contact.email').value = data.contact?.email || '';
+            
+            document.getElementById('como_llegar.texto_transporte_publico').value = data.como_llegar?.texto_transporte_publico || '';
+            document.getElementById('como_llegar.texto_auto').value = data.como_llegar?.texto_auto || '';
+
+            const days = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+            days.forEach(day => {
+                const dayData = data.opening_hours?.[day] || { open: '', close: '', is_closed: false };
+                document.getElementById(`opening_hours.${day}.open`).value = dayData.open || '';
+                document.getElementById(`opening_hours.${day}.close`).value = dayData.close || '';
+                document.getElementById(`opening_hours.${day}.is_closed`).checked = dayData.is_closed === true;
+            });
+            
+            document.getElementById('config.mostrar_ubicacion_mapa').checked = data.config?.mostrar_ubicacion_mapa === true;
+            document.getElementById('config.activo').checked = data.config?.activo === true;
+
+            // Clear and repopulate payment methods
+            const paymentMethodsContainer = document.getElementById('paymentMethodsContainer');
+            paymentMethodsContainer.innerHTML = '';
+            if (Array.isArray(data.payment_methods)) {
+                data.payment_methods.forEach(method => {
+                    if (method && typeof method === 'string' && method.trim()) {
+                        addPaymentMethodInput(method.trim());
+                    }
+                });
+            }
+
+            // Clear and repopulate promotions
+            const promocionesContainer = document.getElementById('promocionesContainer');
+            promocionesContainer.innerHTML = '';
+            if (Array.isArray(data.promotions)) {
+                data.promotions.forEach(promo => addPromocionInput(promo));
+            }
+
+            // Populate policies
+            const policies = data.policies || {};
+            
+            // Pets
+            document.getElementById('policies.pets.allowed').checked = policies.pets?.allowed === true;
+            document.getElementById('policies.pets.restrictions').value = policies.pets?.restrictions || '';
+            document.getElementById('policies.pets.description').value = policies.pets?.description || '';
+            
+            // Children
+            document.getElementById('policies.children.allowed').checked = policies.children?.allowed === true;
+            document.getElementById('policies.children.description').value = policies.children?.description || '';
+            document.getElementById('policies.children.amenities').value = Array.isArray(policies.children?.amenities) ? policies.children.amenities.join(', ') : '';
+            
+            // Accessibility
+            document.getElementById('policies.accessibility.wheelchair_accessible').checked = policies.accessibility?.wheelchair_accessible === true;
+            document.getElementById('policies.accessibility.braille_menu').checked = policies.accessibility?.braille_menu === true;
+            document.getElementById('policies.accessibility.description').value = policies.accessibility?.description || '';
+            
+            // Dietary options
+            document.getElementById('policies.dietary_options.vegetarian').checked = policies.dietary_options?.vegetarian === true;
+            document.getElementById('policies.dietary_options.vegan').checked = policies.dietary_options?.vegan === true;
+            document.getElementById('policies.dietary_options.gluten_free').checked = policies.dietary_options?.gluten_free === true;
+            document.getElementById('policies.dietary_options.description').value = policies.dietary_options?.description || '';
+            
+            // Parking
+            document.getElementById('policies.parking.available').checked = policies.parking?.available === true;
+            document.getElementById('policies.parking.type').value = policies.parking?.type || 'propio';
+            document.getElementById('policies.parking.description').value = policies.parking?.description || '';
+            
+            // Dress code
+            document.getElementById('policies.dress_code.required').checked = policies.dress_code?.required === true;
+            document.getElementById('policies.dress_code.style').value = policies.dress_code?.style || 'casual';
+            document.getElementById('policies.dress_code.description').value = policies.dress_code?.description || '';
+            
+            // Smoking
+            document.getElementById('policies.smoking.allowed').checked = policies.smoking?.allowed === true;
+            document.getElementById('policies.smoking.outdoor_allowed').checked = policies.smoking?.outdoor_allowed === true;
+            document.getElementById('policies.smoking.description').value = policies.smoking?.description || '';
+            
+            // Cancellation
+            document.getElementById('policies.cancellation.advance_notice_hours').value = policies.cancellation?.advance_notice_hours || 4;
+            document.getElementById('policies.cancellation.policy').value = policies.cancellation?.policy || '';
+            document.getElementById('policies.cancellation.description').value = policies.cancellation?.description || '';
+            
+            // Noise level
+            document.getElementById('policies.noise_level.level').value = policies.noise_level?.level || 'moderado';
+            document.getElementById('policies.noise_level.description').value = policies.noise_level?.description || '';
+            
+            // Group reservations
+            document.getElementById('policies.group_reservations.max_size').value = policies.group_reservations?.max_size || 20;
+            document.getElementById('policies.group_reservations.advance_booking_required').checked = policies.group_reservations?.advance_booking_required === true;
+            document.getElementById('policies.group_reservations.description').value = policies.group_reservations?.description || '';
+        }
+
+        function addPaymentMethodInput(value = '') {
+            const container = document.getElementById('paymentMethodsContainer');
+            const div = document.createElement('div');
+            div.className = 'payment-method-item flex items-center space-x-2 mb-3';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = value;
+            input.placeholder = 'Ej: Visa, Mastercard, Efectivo';
+            input.className = 'mt-1 block flex-grow rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3 bg-white';
+            
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'remove-payment-method-btn bg-red-500 hover:bg-red-600 text-white font-semibold py-1.5 px-3 text-xs rounded-md shadow-sm';
+            removeButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+            
+            div.appendChild(input);
+            div.appendChild(removeButton);
+            container.appendChild(div);
+        }
+
+        function addPromocionInput(promocion = { nombre: '', descripcion_corta: '', descuento_aplicado: '' }) {
+            const container = document.getElementById('promocionesContainer');
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'promocion-item bg-gray-50 p-4 rounded-md border border-gray-200';
+            
+            const nombreLabel = document.createElement('label');
+            nombreLabel.textContent = 'Nombre de la Promoción:';
+            nombreLabel.className = 'block text-sm font-medium text-gray-700';
+            const nombreInput = document.createElement('input');
+            nombreInput.type = 'text';
+            nombreInput.name = 'promocion_nombre';
+            nombreInput.value = promocion.nombre;
+            nombreInput.placeholder = 'Ej: 2x1 en Cervezas';
+            nombreInput.className = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3 bg-white';
+            
+            const descLabel = document.createElement('label');
+            descLabel.textContent = 'Descripción Corta:';
+            descLabel.className = 'block text-sm font-medium text-gray-700 mt-2';
+            const descInput = document.createElement('textarea');
+            descInput.name = 'promocion_descripcion';
+            descInput.value = promocion.descripcion_corta;
+            descInput.placeholder = 'Ej: Válido los martes y miércoles';
+            descInput.rows = 2;
+            descInput.className = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3 bg-white';
+
+            const descuentoLabel = document.createElement('label');
+            descuentoLabel.textContent = 'Descuento Aplicado:';
+            descuentoLabel.className = 'block text-sm font-medium text-gray-700 mt-2';
+            const descuentoInput = document.createElement('input');
+            descuentoInput.type = 'text';
+            descuentoInput.name = 'promocion_descuento';
+            descuentoInput.value = promocion.descuento_aplicado;
+            descuentoInput.placeholder = 'Ej: 50%';
+            descuentoInput.className = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm py-2 px-3 bg-white';
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.innerHTML = '<i class="fas fa-trash-alt mr-1"></i>Eliminar';
+            removeButton.className = 'remove-promocion-btn bg-red-500 hover:bg-red-600 text-white font-semibold py-1.5 px-3 text-xs rounded-md shadow-sm mt-3 inline-flex items-center';
+            
+            itemDiv.appendChild(nombreLabel);
+            itemDiv.appendChild(nombreInput);
+            itemDiv.appendChild(descLabel);
+            itemDiv.appendChild(descInput);
+            itemDiv.appendChild(descuentoLabel);
+            itemDiv.appendChild(descuentoInput);
+            itemDiv.appendChild(removeButton);
+            container.appendChild(itemDiv);
+        }
+
+        function showNotification(message, type = 'success') {
+            const successDiv = document.getElementById('successMessage');
+            const errorDiv = document.getElementById('errorMessage');
+            let targetDiv, span;
+
+            if (type === 'success') {
+                targetDiv = successDiv;
+                span = successDiv.querySelector('span');
+                successDiv.classList.remove('hidden');
+                errorDiv.classList.add('hidden');
+            } else { // 'error'
+                targetDiv = errorDiv;
+                span = errorDiv.querySelector('span');
+                errorDiv.classList.remove('hidden');
+                successDiv.classList.add('hidden');
+            }
+            
+            if (span) span.textContent = message;
+            else targetDiv.childNodes[1].textContent = message;
+
+            setTimeout(() => targetDiv.classList.add('hidden'), 5000);
+        }
+
+        function saveChanges() {
+            const formData = collectFormData();
+            const formDataToSend = new FormData();
+            
+            // Log the form data before sending for debugging purposes
+            console.log('Form data before sending:', JSON.stringify(formData, null, 2));
+            
+            // Convert to FormData
+            for (const key in formData) {
+                if (formData.hasOwnProperty(key)) {
+                    let value = formData[key];
+                    if (typeof value === 'object') {
+                        value = JSON.stringify(value);
+                    }
+                    formDataToSend.append(key, value);
+                }
+            }
+
+            fetch('/admin/location_editor', {
+                method: 'POST',
+                body: formDataToSend
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showNotification(result.message || 'Cambios guardados correctamente.', 'success');
+                    // Log the saved data
+                    console.log('Save successful. Reloading data...');
+                    loadRestaurantData(); // Reload data to ensure we're in sync
+                } else {
+                    console.error('Error saving:', result.error);
+                    showNotification('Error al guardar: ' + (result.error || 'Error desconocido'), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving data:', error);
+                showNotification('Error de red al guardar los cambios.', 'error');
+            });
+        }
+
+        function collectFormData() {
+            const formData = {
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value,
+                location: {
+                    address: document.getElementById('location.address').value,
+                    google_maps_link: document.getElementById('location.google_maps_link').value
+                },
+                contact: {
+                    phone: document.getElementById('contact.phone').value,
+                    email: document.getElementById('contact.email').value
+                },
+                como_llegar: {
+                    texto_transporte_publico: document.getElementById('como_llegar.texto_transporte_publico').value,
+                    texto_auto: document.getElementById('como_llegar.texto_auto').value
+                },
+                opening_hours: {},
+                payment_methods: [],
+                promotions: [],
+                config: {
+                    mostrar_ubicacion_mapa: document.getElementById('config.mostrar_ubicacion_mapa').checked,
+                    activo: document.getElementById('config.activo').checked
+                }
+            };
+
+            // Collect opening hours
+            ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'].forEach(day => {
+                formData.opening_hours[day] = {
+                    open: document.getElementById(`opening_hours.${day}.open`).value,
+                    close: document.getElementById(`opening_hours.${day}.close`).value,
+                    is_closed: document.getElementById(`opening_hours.${day}.is_closed`).checked
+                };
+            });
+
+            // Collect payment methods - ensure we get all non-empty values
+            const paymentMethodInputs = document.querySelectorAll('#paymentMethodsContainer .payment-method-item input');
+            paymentMethodInputs.forEach(input => {
+                const value = input.value.trim();
+                if (value) {
+                    formData.payment_methods.push(value);
+                }
+            });
+
+            // Collect promotions
+            const promocionItems = document.querySelectorAll('#promocionesContainer .promocion-item');
+            promocionItems.forEach(item => {
+                const nombre = item.querySelector('[name="promocion_nombre"]')?.value.trim();
+                const descripcion = item.querySelector('[name="promocion_descripcion"]')?.value.trim();
+                const descuento = item.querySelector('[name="promocion_descuento"]')?.value.trim();
+                
+                if (nombre || descripcion || descuento) {
+                    formData.promotions.push({
+                        nombre: nombre,
+                        descripcion_corta: descripcion,
+                        descuento_aplicado: descuento
+                    });
+                }
+            });
+
+            // Collect policies
+            formData.policies = {
+                pets: {
+                    allowed: document.getElementById('policies.pets.allowed').checked,
+                    restrictions: document.getElementById('policies.pets.restrictions').value,
+                    description: document.getElementById('policies.pets.description').value
+                },
+                children: {
+                    allowed: document.getElementById('policies.children.allowed').checked,
+                    description: document.getElementById('policies.children.description').value,
+                    amenities: document.getElementById('policies.children.amenities').value.split(',').map(s => s.trim()).filter(s => s)
+                },
+                accessibility: {
+                    wheelchair_accessible: document.getElementById('policies.accessibility.wheelchair_accessible').checked,
+                    braille_menu: document.getElementById('policies.accessibility.braille_menu').checked,
+                    description: document.getElementById('policies.accessibility.description').value
+                },
+                dietary_options: {
+                    vegetarian: document.getElementById('policies.dietary_options.vegetarian').checked,
+                    vegan: document.getElementById('policies.dietary_options.vegan').checked,
+                    gluten_free: document.getElementById('policies.dietary_options.gluten_free').checked,
+                    description: document.getElementById('policies.dietary_options.description').value
+                },
+                parking: {
+                    available: document.getElementById('policies.parking.available').checked,
+                    type: document.getElementById('policies.parking.type').value,
+                    description: document.getElementById('policies.parking.description').value
+                },
+                dress_code: {
+                    required: document.getElementById('policies.dress_code.required').checked,
+                    style: document.getElementById('policies.dress_code.style').value,
+                    description: document.getElementById('policies.dress_code.description').value
+                },
+                smoking: {
+                    allowed: document.getElementById('policies.smoking.allowed').checked,
+                    outdoor_allowed: document.getElementById('policies.smoking.outdoor_allowed').checked,
+                    description: document.getElementById('policies.smoking.description').value
+                },
+                cancellation: {
+                    advance_notice_hours: parseInt(document.getElementById('policies.cancellation.advance_notice_hours').value) || 4,
+                    policy: document.getElementById('policies.cancellation.policy').value,
+                    description: document.getElementById('policies.cancellation.description').value
+                },
+                noise_level: {
+                    level: document.getElementById('policies.noise_level.level').value,
+                    description: document.getElementById('policies.noise_level.description').value
+                },
+                group_reservations: {
+                    max_size: parseInt(document.getElementById('policies.group_reservations.max_size').value) || 20,
+                    advance_booking_required: document.getElementById('policies.group_reservations.advance_booking_required').checked,
+                    description: document.getElementById('policies.group_reservations.description').value
+                }
+            };
+
+            return formData;
+        }
+
+        function toggleJsonView() {
+            const formView = document.getElementById('formView');
+            const jsonView = document.getElementById('jsonView');
+            const toggleButton = document.getElementById('toggleView');
+
+            if (formView.style.display !== 'none') {
+                const currentFormData = collectFormData();
+                editor.setValue(JSON.stringify(currentFormData, null, 2));
+                formView.style.display = 'none';
+                jsonView.style.display = 'block';
+                toggleButton.textContent = 'Ver/Editar Formulario';
+                editor.refresh();
+            } else {
+                try {
+                    const jsonData = JSON.parse(editor.getValue());
+                    populateForm(jsonData);
+                    restaurantData = jsonData;
+                    formView.style.display = 'block';
+                    jsonView.style.display = 'none';
+                    toggleButton.textContent = 'Ver/Editar JSON';
+                } catch (e) {
+                    showNotification('Error: El JSON no es válido. No se puede cambiar a la vista de formulario. ' + e.message, 'error');
+                }
+            }
+        }
+
+        // Initialize the form
+        function initializeEditor() {
+
+            loadRestaurantData();
+
+            // Ya no necesitamos el toggleView porque está oculto
+            document.getElementById('saveButton').addEventListener('click', saveChanges);
+            document.getElementById('resetButton').addEventListener('click', function() {
+                if (confirm('¿Estás seguro de que quieres restablecer los datos a la última versión guardada? Los cambios no guardados se perderán.')) {
+                    loadRestaurantData();
+                }
+            });
+
+            document.getElementById('addPaymentMethod').addEventListener('click', () => addPaymentMethodInput());
+            document.getElementById('addPromocion').addEventListener('click', () => addPromocionInput());
+
+            // Event delegation for dynamic elements
+            document.getElementById('paymentMethodsContainer').addEventListener('click', function(event) {
+                const removeButton = event.target.closest('.remove-payment-method-btn');
+                if (removeButton) {
+                    removeButton.closest('.payment-method-item').remove();
+                }
+            });
+            
+            document.getElementById('promocionesContainer').addEventListener('click', function(event) {
+                const removeButton = event.target.closest('.remove-promocion-btn');
+                if (removeButton) {
+                    removeButton.closest('.promocion-item').remove();
+                }
+            });
+        }
+
+        // Initialize only after all scripts have loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeEditor);
+        } else {
+            initializeEditor();
+        }
+    </script>
+{% endblock %}

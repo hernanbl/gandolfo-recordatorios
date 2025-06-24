@@ -1,0 +1,97 @@
+{
+<<<<<<< HEAD
+  "restaurant_id": "4a6f6088-61a6-44a2-aa75-5161e1f3cad1",
+  "restaurant_name": "Elsie restaurante",
+  "categories": [
+    {
+      "id": "entradas",
+      "name": "Entradas",
+      "description": "Deliciosos aperitivos para comenzar",
+      "items": [
+        {
+          "id": "entrada_1",
+          "name": "Entrada de Ejemplo",
+          "description": "Descripción de la entrada de ejemplo",
+          "price": 0,
+          "available": true,
+          "ingredients": [
+            "ingrediente1",
+            "ingrediente2"
+          ],
+          "allergens": []
+        }
+      ]
+    },
+    {
+      "id": "principales",
+      "name": "Platos Principales",
+      "description": "Nuestros platos estrella",
+      "items": [
+        {
+          "id": "principal_1",
+          "name": "Plato Principal de Ejemplo",
+          "description": "Descripción del plato principal de ejemplo",
+          "price": 0,
+          "available": true,
+          "ingredients": [
+            "ingrediente1",
+            "ingrediente2"
+          ],
+          "allergens": []
+        }
+      ]
+    }
+  ],
+  "last_updated": "2025-06-15T12:09:00.903416"
+=======
+  "dias_semana": {
+    "lunes": {
+      "almuerzo": [
+        {
+          "name": "Milanesa con puré de boñato",
+          "price": "18900"
+        },
+        {
+          "name": "Ensalada César",
+          "price": ""
+        }
+      ],
+      "cena": []
+    },
+    "martes": {
+      "almuerzo": [],
+      "cena": []
+    },
+    "miercoles": {
+      "almuerzo": [],
+      "cena": []
+    },
+    "jueves": {
+      "almuerzo": [],
+      "cena": []
+    },
+    "viernes": {
+      "almuerzo": [],
+      "cena": []
+    },
+    "sabado": {
+      "almuerzo": [],
+      "cena": []
+    },
+    "domingo": {
+      "almuerzo": [],
+      "cena": []
+    }
+  },
+  "menu_especial": {
+    "celiaco": {
+      "platos_principales": [
+        "Milanesa de calabaza con semillas de chia y muzzarela",
+        "Hamburguesa de lentejas con especias"
+      ],
+      "postres": [],
+      "nota": "Todos nuestros platos sin TACC son preparados en área libre de contaminación cruzada."
+    }
+  }
+>>>>>>> 7bf82351ade0d8b638b7d5e97ab442e21b8c601b
+}

@@ -1,0 +1,113 @@
+# Render Blueprint API
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: gandolfo-restaurant
+    env: python
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_WHATSAPP_NUMBER
+        sync: false
+      - key: SUPABASE_ENABLED
+        value: true
+      - key: TZ
+        value: America/Argentina/Buenos_Aires
+      - key: USE_PROD_TABLES
+        value: true
+
+  # Verificación diaria del sistema a las 9:00 AM Argentina (12:00 UTC)
+  - type: cron
+    name: daily-system-check
+    env: python
+    region: oregon
+    schedule: "0 12 * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 scripts/check_reminder_system.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_WHATSAPP_NUMBER
+        sync: false
+      - key: SUPABASE_ENABLED
+        value: true
+      - key: TZ
+        value: America/Argentina/Buenos_Aires
+      - key: USE_PROD_TABLES
+        value: true
+
+  # Envío principal de recordatorios a las 10:00 AM Argentina (13:00 UTC)
+  - type: cron
+    name: daily-reminders-morning
+    env: python
+    region: oregon
+    schedule: "0 13 * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 scripts/send_reminders.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_WHATSAPP_NUMBER
+        sync: false
+      - key: SUPABASE_ENABLED
+        value: true
+      - key: TZ
+        value: America/Argentina/Buenos_Aires
+      - key: USE_PROD_TABLES
+        value: true
+
+  # Envío de respaldo a las 14:00 Argentina (17:00 UTC)
+  - type: cron
+    name: daily-reminders-backup
+    env: python
+    region: oregon
+    schedule: "0 17 * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 scripts/send_reminders.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_WHATSAPP_NUMBER
+        sync: false
+      - key: SUPABASE_ENABLED
+        value: true
+      - key: TZ
+        value: America/Argentina/Buenos_Aires
+      - key: USE_PROD_TABLES
+        value: true

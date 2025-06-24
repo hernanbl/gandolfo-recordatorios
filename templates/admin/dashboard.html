@@ -1,0 +1,324 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_head %}
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome - Actualizado -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Chart configurations -->
+    <script>
+    window.chartData = {
+        status_labels: {{ status_labels|tojson|safe }},
+        status_counts: {{ status_counts|tojson|safe }},
+        month_labels: {{ month_labels|tojson|safe }},
+        reservation_trend: {{ reservation_trend|tojson|safe }},
+        confirmed_trend: {{ confirmed_trend|tojson|safe }}, 
+        pending_trend: {{ pending_trend|tojson|safe }},
+        no_asistio_trend: {{ no_asistio_trend|tojson|safe }},
+        canceladas_trend: {{ canceladas_trend|tojson|safe }},
+        dias_labels: {{ dias_labels|tojson|safe }},
+        reservas_counts: {{ reservas_counts|tojson|safe }},
+        personas_counts_diarias: {{ personas_counts_diarias|tojson|safe }},
+        ocupacion_diaria_pct: {{ ocupacion_diaria_pct|tojson|safe }},
+        top_clientes_labels: {{ top_clientes_labels|tojson|safe }},
+        top_clientes_counts: {{ top_clientes_counts|tojson|safe }}
+    };
+    </script>
+    <script src="/static/js/top-clientes-chart.js"></script>
+{% endblock %}
+
+{% block content %}
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Información del restaurante actual -->
+        <div class="bg-white rounded-lg shadow-sm p-4 mb-6 flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="mr-3 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">Restaurante seleccionado:</p>
+                    <h2 class="font-bold text-gray-800">{{ restaurant_name }}</h2>
+                </div>
+            </div>
+            <a href="/admin/crear_restaurante" class="text-sm text-blue-600 hover:text-blue-800">
+                Cambiar restaurante
+            </a>
+        </div>
+        
+        {% if demo_mode %}
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <div class="mr-3 flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-blue-700 font-medium">Estás viendo el restaurante de demostración "{{ restaurant_name }}".</p>
+                        <p class="text-blue-600 text-sm mt-1">Este restaurante utiliza la tabla de reservas original (legacy) y la configuración del sandbox de Twilio para WhatsApp.</p>
+                    </div>
+                </div>
+                <a href="/admin/demo/reset_data" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md text-sm flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Agregar más datos de prueba
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if not tiene_datos %}
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+               <p class="text-yellow-700">Aún no tienes reservas. Los gráficos y estadísticas aparecerán cuando comiences a recibir reservas.</p>
+        </div>
+        {% endif %}
+        <h1 class="text-2xl font-bold text-gray-800 mb-6" style="text-shadow: none; padding: 10px;">
+            <i class="fas fa-tachometer-alt mr-2"></i>Panel de Administración
+        </h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Card 1: Resumen -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2">
+                    <h2 class="text-xl font-bold flex items-center" style="color: rgb(92, 101, 42);">
+                        <i class="fas fa-chart-pie mr-2"></i>
+                        Resumen
+                    </h2>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-gray-700 mb-2">Resumen de reservas creadas</h3>
+                    <div class="grid grid-cols-3 gap-2">
+                        <!-- Contador Hoy -->
+                        <div style="background-color: rgb(229, 233, 212);" class="p-3 rounded-lg text-center">
+                            <div class="text-2xl font-bold" style="color: rgb(92, 101, 42);">
+                                {{ today_count }}
+                            </div>
+                            <div class="text-sm" style="color: rgb(92, 101, 42);">Hoy</div>
+                        </div>
+                        <!-- Contador Semana -->
+                        <div style="background-color: rgb(229, 233, 212);" class="p-3 rounded-lg text-center">
+                            <div class="text-2xl font-bold" style="color: rgb(92, 101, 42);">
+                                {{ week_count }}
+                            </div>
+                            <div class="text-sm" style="color: rgb(92, 101, 42);">Esta semana</div>
+                        </div>
+                        <!-- Contador Mes -->
+                        <div style="background-color: rgb(229, 233, 212);" class="p-3 rounded-lg text-center">
+                            <div class="text-2xl font-bold" style="color: rgb(92, 101, 42);">
+                                {{ month_count }}
+                            </div>
+                            <div class="text-sm" style="color: rgb(92, 101, 42);">Este mes</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-4">
+                        <a href="/admin/calendar" class="bg-[rgb(253,230,138)] hover:bg-[#e5cb7c] font-bold py-2 px-4 rounded text-center" style="color: #8B6914;">
+                            Calendario
+                        </a>
+                        <a href="/admin/reservations" class="bg-[rgb(253,230,138)] hover:bg-[#e5cb7c] font-bold py-2 px-4 rounded text-center" style="color: #8B6914;">
+                            Tabla de Reservas
+                        </a>
+                    </div><br>
+                    <p class="text-sm mt-2" style="color: rgb(92, 101, 42);">Vista de TABLA para cambiar el estado de la reserva.<br><br>Datos <b>creados</b> en el backend, por fecha de creación, al día de la fecha.</p>
+                </div>
+            </div>
+            
+            <!-- Card 2: Estado de Reservas -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2">
+                    <h2 class="text-xl font-bold flex items-center" style="color: rgb(92, 101, 42);">
+                        <i class="fas fa-clipboard-list mr-2"></i>
+                        Estado de Reservas
+                    </h2>
+                </div>
+                <div class="p-4">
+                    <div class="h-64">
+                        <canvas id="reservationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card 3: Evolución -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2">
+                    <h2 class="text-xl font-bold flex items-center" style="color: rgb(92, 101, 42);">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Evolución
+                    </h2>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-gray-700 mb-2">Tendencia Mensual</h3>
+                    <div class="h-64">
+                        <canvas id="reservationTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de columnas de reservas por día y Top Clientes en una fila -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            <!-- Card: Reservas diarias del mes actual -->
+            <div class="md:col-span-2">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
+                    <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2">
+                        <h2 class="text-xl font-bold flex items-center justify-between" style="color: rgb(92, 101, 42);">
+                            <div class="flex items-center">
+                                <i class="fas fa-calendar-day mr-2"></i>
+                                Reservas Diarias
+                            </div>
+                            <div class="text-base font-normal">
+                                {{ current_month_label }}
+                            </div>
+                        </h2>
+                    </div>
+                    <div class="flex-1 flex flex-col justify-center p-4">
+                        <h3 class="font-semibold text-gray-700 mb-2 text-center">Distribución de reservas y personas por día + % de ocupación</h3>
+                        <div class="h-[400px] w-full">
+                            <canvas id="reservasDiariasChart" style="width:100% !important; height:100% !important; display:block;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Card: Top Clientes -->
+            <div class="md:col-span-1">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
+                    <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2">
+                        <h2 class="text-xl font-bold flex items-center justify-between" style="color: rgb(92, 101, 42);">
+                            <div class="flex items-center">
+                                <i class="fas fa-trophy mr-2"></i>
+                                Top Clientes
+                            </div>
+                            <div class="text-base font-normal">
+                                Últimos 3 meses
+                            </div>
+                        </h2>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-center">
+                        <h3 class="font-semibold text-gray-700 mb-2 text-center">Clientes con más reservas confirmadas</h3>
+                        <div class="h-64 md:h-full flex items-center justify-center">
+                            <canvas id="topClientesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Tarjeta de Gestión del Menú -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2">
+                    <h2 class="text-xl font-bold flex items-center" style="color: rgb(92, 101, 42);">
+                        <i class="fas fa-utensils mr-2"></i>
+                        Gestión del Menú
+                    </h2>
+                </div>
+                <div class="p-4">
+                    <p class="text-gray-700 mb-4">Editar el menú semanal día por día. Menúes especiales (celíaco, vegetariano)</p>
+                    <a href="/admin/menu_editor" 
+                       style="background-color: rgb(253, 230, 138); color: #8B6914;" 
+                       class="hover:bg-[#e5cb7c] font-bold py-2 px-4 rounded inline-flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                        </svg>
+                        Editar Menú
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Nueva Tarjeta de Gestión de Ubicación y demas datos -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2">
+                    <h2 class="text-xl font-bold flex items-center" style="color: rgb(92, 101, 42);">
+                        <i class="fas fa-map-marker-alt mr-2"></i>
+                        Gestión de Personalización
+                    </h2>
+                </div>
+                <div class="p-4">
+                    <p class="text-gray-700 mb-4">Editar info general, ubicación, teléfono, métodos de pago, capacidad, etc.</p>
+                    <a href="/admin/location_editor_page" 
+                       style="background-color: rgb(253, 230, 138); color: #8B6914;" 
+                       class="hover:bg-[#e5cb7c] font-bold py-2 px-4 rounded inline-flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                        </svg>
+                        Editar Info
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Añadiendo espacio entre las cards y el footer -->
+  
+
+    <!-- Card: Feedback de Clientes -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div class="grid grid-cols-1">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2">
+                    <h2 class="text-xl font-bold flex items-center" style="color: rgb(92, 101, 42);">
+                        <i class="fas fa-comments mr-2"></i>
+                        Feedback de Clientes
+                    </h2>
+                </div>
+                <div class="p-4">
+                    <div class="text-center">
+                        <div class="text-gray-500 mb-4">
+                            <p>Reseñas de clientes del proceso de reserva</p>
+                        </div>
+                        <a href="/admin/feedback" class="bg-[rgb(253,230,138)] hover:bg-[#e5cb7c] font-bold py-2 px-4 rounded" style="color: #8B6914;">
+                            Ver feedbacks
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="py-4"></div>
+    
+    <script>
+        // Mostrar mensajes de autenticación si existen
+        document.addEventListener('DOMContentLoaded', function() {
+            const authMessage = sessionStorage.getItem('auth_message');
+            const authMessageType = sessionStorage.getItem('auth_message_type') || 'info';
+            
+            if (authMessage) {
+                // Crear y mostrar el mensaje
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-md shadow-lg max-w-md ${
+                    authMessageType === 'success' ? 'bg-green-100 border border-green-400 text-green-700' :
+                    authMessageType === 'error' ? 'bg-red-100 border border-red-400 text-red-700' :
+                    'bg-blue-100 border border-blue-400 text-blue-700'
+                }`;
+                alertDiv.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span>${authMessage}</span>
+                        <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-lg font-bold">&times;</button>
+                    </div>
+                `;
+                
+                document.body.appendChild(alertDiv);
+                
+                // Auto-remover después de 5 segundos
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.remove();
+                    }
+                }, 5000);
+                
+                // Limpiar el sessionStorage
+                sessionStorage.removeItem('auth_message');
+                sessionStorage.removeItem('auth_message_type');
+            }
+        });
+    </script>
+{% endblock %}

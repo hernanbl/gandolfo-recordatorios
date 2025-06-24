@@ -1,0 +1,9 @@
+{
+  "timestamp": "2025-05-27T15:56:01.428334",
+  "restaurant_id": "e0f20795-d325-4af1-8603-1c52050048db",
+  "phone_number": "1234567890",
+  "reservation_state": "esperando_personas",
+  "reservation_data": {
+    "fecha": "27/05/2025"
+  }
+}

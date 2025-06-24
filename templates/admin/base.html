@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Panel de Administración{% endblock %} - Gandolfo</title>
+    <link rel="icon" type="image/x-icon" href="../static/img/favicon.ico">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body style="background-color: rgb(227, 230, 230);" class="flex flex-col min-h-screen">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <img src="/static/img/logo.png" alt="Gandolfo Logo" class="h-10 w-auto mr-3">
+                </div>
+                <div class="flex items-center">
+                    <a href="/admin/dashboard" class="font-semibold text-gray-700 hover:text-gray-900 mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                        </svg>
+                        Dashboard
+                    </a>
+                    <!-- Removed Mis Restaurantes link -->
+                    </a>
+                    <!-- Removed restaurant name display -->
+                    {% if g.is_demo_restaurant %}
+                    <div class="mr-3 px-3 py-1 bg-blue-100 text-blue-800 border border-blue-300 rounded-md flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="font-medium text-sm">Modo Demo</span>
+                    </div>
+                    {% endif %}
+                    <div class="mr-4 text-gray-700"><span class="font-semibold">{{ session.get('user_email', username) }}</span></div>
+                    <a href="/admin/logout" style="background-color: rgb(251, 194, 34); color: black;" class="hover:bg-[#e0b12e] font-bold py-2 px-4 rounded">
+                        Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Añadiendo espacio entre el contenido y el footer -->
+    <div class="py-8"></div>
+
+    <footer class="bg-white border-t border-gray-200 py-4 mt-auto">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            © 2025 Gandolfo. Un desarrollo de <a href="https://vivacom.com.ar/" class="text-green-800 hover:text-green-1000">
+                &nbsp;<img src="/static/img/logo-vivacom_gris.png" alt="Vivacom Argentina" class="h-4 inline-block">
+            </a>
+        </div>
+    </footer>
+</body>
+</html>

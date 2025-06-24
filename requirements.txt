@@ -1,0 +1,39 @@
+# Framework web
+Flask[async]==2.3.3
+Werkzeug==2.3.7
+Jinja2==3.1.2
+itsdangerous==2.1.2
+MarkupSafe==2.1.3
+flask-cors==4.0.0
+asgiref==3.7.2  # Required for Flask async support
+
+# Base de datos
+supabase==1.0.3
+
+# Variables de entorno
+python-dotenv==1.0.0
+
+# Zona horaria
+pytz==2023.3
+
+# Integración con Twilio
+twilio==8.5.0
+
+# Servidor para producción
+gunicorn==21.2.0
+
+# Solicitudes HTTP
+requests>=2.32.3
+
+# Utilidades
+python-dateutil==2.8.2
+pytz==2023.3
+
+# Especificamos una versión de pydantic compatible
+pydantic>=2.0
+
+# Especificamos una versión de postgrest compatible con supabase 1.0.3
+postgrest<0.11.0,>=0.10.6
+
+# Comentamos deepseek-ai temporalmente para el despliegue inicial
+deepseek-ai==0.0.1

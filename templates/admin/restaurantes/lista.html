@@ -1,0 +1,159 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Mis Restaurantes{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Mis Restaurantes</h1>
+    
+    <div class="bg-white rounded-lg shadow-md mb-6">
+        <div class="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-gray-800">Mis Restaurantes</h2>
+            <a href="{{ url_for('admin.crear_restaurante') }}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded text-sm flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Nuevo Restaurante
+            </a>
+        </div>
+        <div class="px-6 py-4">
+            {% if error %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                {{ error }}
+            </div>
+            {% endif %}
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="{% if category == 'error' %}bg-red-100 border border-red-400 text-red-700{% else %}bg-green-100 border border-green-400 text-green-700{% endif %} px-4 py-3 rounded relative mb-4">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% if restaurantes %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white" id="restaurantesTable">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="py-3 px-4 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                            <th class="py-3 px-4 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dirección</th>
+                            <th class="py-3 px-4 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
+                            <th class="py-3 px-4 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Capacidad</th>
+                            <th class="py-3 px-4 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th class="py-3 px-4 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for restaurante in restaurantes %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-4 text-sm">{{ restaurante.nombre }}</td>
+                            <td class="py-3 px-4 text-sm">{{ restaurante.get('config', {}).get('location', {}).get('address', 'N/A') }}</td>
+                            <td class="py-3 px-4 text-sm">{{ restaurante.telefono }}</td>
+                            <td class="py-3 px-4 text-sm">{{ restaurante.capacidad }}</td>
+                            <td class="py-3 px-4 text-sm">
+                                {% if restaurante.estado == 'activo' or (restaurante.estado is undefined and restaurante.activo) or (restaurante.estado is undefined and restaurante.config and restaurante.config.activo) %}
+                                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">Activo</span>
+                                {% elif restaurante.estado == 'mantenimiento' %}
+                                <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded">Mantenimiento</span>
+                                {% else %}
+                                <span class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded">Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-sm">
+                                <div class="flex space-x-2">
+                                    <!-- Botón para gestionar este restaurante -->
+                                    <a href="{{ url_for('admin.seleccionar_restaurante', id=restaurante.id) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white p-1.5 rounded" title="Gestionar este restaurante">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                    <a href="{{ url_for('admin.editar_restaurante', id=restaurante.id) }}" class="bg-blue-500 hover:bg-blue-600 text-white p-1.5 rounded" title="Editar información">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                        </svg>
+                                    </a>
+                                    <a href="{{ url_for('admin.editar_restaurante', id=restaurante.id) }}" class="bg-green-500 hover:bg-green-600 text-white p-1.5 rounded" title="Ver detalles">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                    <button type="button" class="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded" onclick="openDeleteModal('{{ restaurante.id }}', '{{ restaurante.nombre }}')" title="Desactivar restaurante">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="bg-blue-50 border border-blue-300 text-blue-700 px-4 py-3 rounded relative">
+                No hay restaurantes registrados aún. <a href="{{ url_for('admin.crear_restaurante') }}" class="text-blue-800 underline">Crear el primer restaurante</a>.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg max-w-md w-full">
+        <div class="border-b border-gray-200 px-6 py-4">
+            <h3 class="text-lg font-medium text-gray-900">Confirmar Acción</h3>
+        </div>
+        <div class="px-6 py-4">
+            <p id="deleteModalText" class="mb-3"></p>
+            <p class="text-red-600 text-sm">Esta acción no elimina el restaurante ni sus datos, simplemente lo marca como inactivo.</p>
+        </div>
+        <div class="bg-gray-50 px-6 py-3 flex justify-end space-x-3">
+            <button type="button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded text-sm" onclick="closeDeleteModal()">
+                Cancelar
+            </button>
+            <form id="deleteForm" method="POST" action="">
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded text-sm">
+                    Desactivar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.tailwindcss.min.css">
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.25/js/dataTables.tailwindcss.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar DataTables si está disponible
+        if (typeof $.fn.DataTable !== 'undefined') {
+            $('#restaurantesTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json'
+                },
+                responsive: true
+            });
+        }
+    });
+    
+    function openDeleteModal(id, nombre) {
+        document.getElementById('deleteModalText').innerText = `¿Estás seguro que deseas desactivar el restaurante "${nombre}"?`;
+        document.getElementById('deleteForm').action = `/admin/restaurantes/${id}/eliminar`;
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+    
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+</script>
+{% endblock %}

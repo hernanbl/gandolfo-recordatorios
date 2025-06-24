@@ -1,0 +1,11 @@
+{
+  "reservation_state": "esperando_nombre",
+  "reservation_data": {
+    "fecha": "23/06/2025",
+    "hora": "21:00",
+    "personas": 2
+  },
+  "user_language": "es",
+  "last_activity": "2025-06-22T15:30:00",
+  "timestamp": "2025-06-22T14:49:08.386430"
+}

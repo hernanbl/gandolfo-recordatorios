@@ -1,0 +1,220 @@
+{
+  "dias_semana": {
+    "lunes": {
+      "almuerzo": [
+        {
+          "name": "Milanesa con puré de calabaza",
+          "price": "14500"
+        },
+        {
+          "name": "Ensalada César",
+          "price": "9400"
+        },
+        {
+          "name": "Pasta con salsa bolognesa",
+          "price": "9600"
+        }
+      ],
+      "cena": [
+        {
+          "name": "Risotto de hongos",
+          "price": "11400"
+        },
+        {
+          "name": "Pollo al limón con papas",
+          "price": "10800"
+        },
+        {
+          "name": "Lenguado grillado con vegetales",
+          "price": "13500"
+        }
+      ]
+    },
+    "martes": {
+      "almuerzo": [
+        {
+          "name": "Lomo al champignon",
+          "price": "12600"
+        },
+        {
+          "name": "Ensalada completa",
+          "price": "8700"
+        },
+        {
+          "name": "Canelones de verdura",
+          "price": "9900"
+        }
+      ],
+      "cena": [
+        {
+          "name": "Bife de chorizo con papas",
+          "price": "13500"
+        },
+        {
+          "name": "Pechuga rellena",
+          "price": "11700"
+        },
+        {
+          "name": "Pasta con frutos de mar",
+          "price": "12600"
+        }
+      ]
+    },
+    "miercoles": {
+      "almuerzo": [
+        {
+          "name": "Pollo a la portuguesa",
+          "price": "10800"
+        },
+        {
+          "name": "Tarta de jamón y queso",
+          "price": "8400"
+        },
+        {
+          "name": "Wok de vegetales",
+          "price": "9300"
+        }
+      ],
+      "cena": [
+        {
+          "name": "Matambre a la pizza",
+          "price": "11400"
+        },
+        {
+          "name": "Merluza a la romana",
+          "price": "11100"
+        },
+        {
+          "name": "Lasagna casera",
+          "price": "10500"
+        }
+      ]
+    },
+    "jueves": {
+      "almuerzo": [
+        {
+          "name": "Milanesa napolitana y queso azul",
+          "price": "11100"
+        },
+        {
+          "name": "Ensalada mediterránea",
+          "price": "8700"
+        },
+        {
+          "name": "Sorrentinos de jamón y queso",
+          "price": "10200"
+        }
+      ],
+      "cena": [
+        {
+          "name": "Lomo a la pimienta",
+          "price": "12900"
+        },
+        {
+          "name": "Pollo al verdeo",
+          "price": "11400"
+        },
+        {
+          "name": "Trucha con salsa de limón",
+          "price": "12300"
+        }
+      ]
+    },
+    "viernes": {
+      "almuerzo": [
+        {
+          "name": "Bife de chorizo",
+          "price": "12600"
+        },
+        {
+          "name": "Ensalada de salmón",
+          "price": "10500"
+        },
+        {
+          "name": "Ravioles de ricota",
+          "price": "9900"
+        }
+      ],
+      "cena": [
+        {
+          "name": "Parrillada para dos",
+          "price": "25500"
+        },
+        {
+          "name": "Risotto de mariscos",
+          "price": "12600"
+        },
+        {
+          "name": "Pollo al curry",
+          "price": "11700"
+        }
+      ]
+    },
+    "sabado": {
+      "almuerzo": [
+        {
+          "name": "Asado completo",
+          "price": "16500"
+        },
+        {
+          "name": "Pasta casera",
+          "price": "10800"
+        },
+        {
+          "name": "Ensalada de la casa",
+          "price": "9000"
+        }
+      ],
+      "cena": [
+        {
+          "name": "Ojo de bife",
+          "price": "14400"
+        },
+        {
+          "name": "Salmón a la manteca",
+          "price": "13500"
+        },
+        {
+          "name": "Pollo a la crema",
+          "price": "11700"
+        }
+      ]
+    },
+    "domingo": {
+      "almuerzo": [
+        {
+          "name": "Paella",
+          "price": "13500"
+        },
+        {
+          "name": "Bondiola braseada",
+          "price": "12600"
+        },
+        {
+          "name": "Pastel de papas",
+          "price": "10800"
+        }
+      ],
+      "cena": "cerrado"
+    }
+  },
+  "menu_especial": {
+    "celiaco": {
+      "platos_principales": [
+        "Milanesa sin TACC con puré",
+        "Risotto de hongos sin TACC",
+        "Pasta sin gluten con salsa bolognesa",
+        "Pollo grillado con vegetales",
+        "Bife con papas"
+      ],
+      "postres": [
+        "Flan casero sin TACC",
+        "Helado artesanal sin TACC",
+        "Brownie sin gluten",
+        "Ensalada de frutas",
+        "Volcán de chocolate \"Fincas\" sin TACC"
+      ],
+      "nota": "Todos nuestros platos sin TACC son preparados en áreas separadas para evitar la contaminación cruzada. Consulte con nuestro personal para más información."
+    }
+  }
+}

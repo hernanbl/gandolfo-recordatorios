@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback de Clientes - {{ restaurant_name }}</title>
+    <link rel="icon" type="image/x-icon" href="../static/img/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body style="background-color: rgb(227, 230, 230);" class="flex flex-col min-h-screen">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-white shadow-md">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">             
+                <div class="flex items-center">
+                    <img src="/static/img/logo.png" alt="Gandolfo Restaurant" class="h-10 w-auto mr-3">
+                </div>
+                <div class="flex items-center">
+                    <div class="mr-4 text-gray-700">Bienvenido, <span class="font-semibold">{{ username }}</span></div>
+                    <a href="/admin/logout" style="background-color: #fbc222; color: black;" class="hover:bg-[#e0b12e] font-bold py-2 px-4 rounded">
+                        Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Feedback de Clientes</h1>
+            <div class="flex space-x-3">
+                <a href="/admin/dashboard" class="bg-[#CCCC99] hover:bg-[#b8b889] font-bold py-2 px-4 rounded" style="color: rgb(92, 101, 42);">
+                    Volver al Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <!-- Total Feedbacks -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-500 bg-opacity-75">
+                        <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Total Feedbacks</dt>
+                            <dd class="text-lg font-medium text-gray-900">{{ estadisticas.total_feedbacks }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Promedio Puntuación -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-500 bg-opacity-75">
+                        <svg class="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Puntuación Promedio</dt>
+                            <dd class="text-lg font-medium text-gray-900">{{ estadisticas.promedio_puntuacion }}/5</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Distribución de Puntuaciones -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-3">Distribución de Puntuaciones</h3>
+                <div class="space-y-3">
+                    {% for i in range(5) %}
+                    {% set puntuacion = i + 1 %}
+                    {% set count = estadisticas.distribuccion_puntuaciones[i] %}
+                    {% set porcentaje = (count / estadisticas.total_feedbacks * 100) if estadisticas.total_feedbacks > 0 else 0 %}
+                    <div class="flex items-center">
+                        <span class="w-16 text-sm">{{ puntuacion }} ⭐</span>
+                        <div class="flex-1 bg-gray-200 rounded-full h-4 mx-3">
+                            <div class="bg-yellow-400 h-4 rounded-full" style="width: {{ porcentaje }}%"></div>
+                        </div>
+                        <span class="text-sm text-gray-600">{{ count }} ({{ "%.1f"|format(porcentaje) }}%)</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Feedbacks -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div style="background-color: rgb(219, 224, 195);" class="px-6 py-4">
+                <h2 class="text-xl font-bold" style="color: rgb(92, 101, 42);">Comentarios de Clientes</h2>
+            </div>
+            <div class="overflow-x-auto">
+                {% if feedbacks %}
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puntuación</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Comentario</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for feedback in feedbacks %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ feedback.fecha_feedback.strftime('%d/%m/%Y %H:%M') if feedback.fecha_feedback else 'N/A' }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ feedback.cliente_telefono or 'Cliente anónimo' }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {% if feedback.puntuacion %}
+                                <div class="flex items-center">
+                                    {% for i in range(1, 6) %}
+                                        {% if i <= feedback.puntuacion %}
+                                            <svg class="h-4 w-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                            </svg>
+                                        {% else %}
+                                            <svg class="h-4 w-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                            </svg>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="ml-2 text-sm text-gray-600">({{ feedback.puntuacion }}/5)</span>
+                                </div>
+                                {% else %}
+                                    <span class="text-gray-400">Sin puntuación</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-900">
+                                <div class="max-w-xs">
+                                    {{ feedback.comentario or 'Sin comentario' }}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No hay feedbacks</h3>
+                    <p class="mt-1 text-sm text-gray-500">Aún no has recibido comentarios de clientes.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-4 mt-auto">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            © 2025 Gandolfo. Un desarrollo de <a href="https://gandolfo.app/" class="text-green-800 hover:text-green-1000">
+                &nbsp;&nbsp;<img src="/static/img/logo-vivacom_gris.png" alt="Gandolfo" class="h-4 inline-block">
+            </a>
+        </div>
+    </footer>
+</body>
+</html>

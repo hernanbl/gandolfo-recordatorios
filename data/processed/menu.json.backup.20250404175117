@@ -1,0 +1,305 @@
+{
+  "dias_semana": {
+    "lunes": {
+      "almuerzo": [
+        {
+          "name": "Milanesa con puré o ensalada",
+          "price": "$12.500"
+        },
+        {
+          "name": "Pasta casera con salsa a elección",
+          "price": "$14.000"
+        },
+        {
+          "name": "Ensalada César con pollo",
+          "price": "$11.300"
+        },
+        {
+          "name": "Suprema de pollo con guarnición",
+          "price": "$14.900"
+        },
+        {
+          "name": "Tarta de verdura con ensalada",
+          "price": "$7.500"
+        }
+      ],
+      "cena": [
+        {
+          "name": "Bife de chorizo con papas rústicas",
+          "price": "$16.500"
+        },
+        {
+          "name": "Ravioles de ricota y espinaca con salsa a elección",
+          "price": "$15.200"
+        },
+        {
+          "name": "Salmón grillado con vegetales salteados",
+          "price": "$27.800"
+        },
+        {
+          "name": "Risotto de portobelos y parmesano",
+          "price": "$12.000"
+        },
+        {
+          "name": "Tabla de fiambres y quesos (para compartir)",
+          "price": "$8.500"
+        }
+      ]
+    },
+    "martes": {
+      "almuerzo": [
+        {
+          "name": "Milanesa con puré o ensalada",
+          "price": "$12.500"
+        },
+        {
+          "name": "Pasta casera con salsa a elección",
+          "price": "$14.000"
+        },
+        {
+          "name": "Ensalada César con pollo",
+          "price": "$11.300"
+        },
+        {
+          "name": "Suprema de pollo con guarnición",
+          "price": "$14.900"
+        },
+        {
+          "name": "Tarta de verdura con ensalada",
+          "price": "$7.500"
+        }
+      ],
+      "cena": [
+        {
+          "name": "Bife de chorizo con papas rústicas",
+          "price": "$16.500"
+        },
+        {
+          "name": "Ravioles de ricota y espinaca con salsa a elección",
+          "price": "$15.200"
+        },
+        {
+          "name": "Salmón grillado con vegetales salteados",
+          "price": "$27.800"
+        },
+        {
+          "name": "Risotto de portobelos y parmesano",
+          "price": "$12.000"
+        },
+        {
+          "name": "Tabla de fiambres y quesos (para compartir)",
+          "price": "$8.500"
+        }
+      ]
+    },
+    "miercoles": {
+      "almuerzo": [
+        {
+          "name": "Milanesa con puré o ensalada",
+          "price": "$12.500"
+        },
+        {
+          "name": "Pasta casera con salsa a elección",
+          "price": "$14.000"
+        },
+        {
+          "name": "Ensalada César con pollo",
+          "price": "$11.300"
+        },
+        {
+          "name": "Suprema de pollo con guarnición",
+          "price": "$14.900"
+        },
+        {
+          "name": "Tarta de verdura con ensalada",
+          "price": "$7.500"
+        }
+      ],
+      "cena": [
+        {
+          "name": "Bife de chorizo con papas rústicas",
+          "price": "$16.500"
+        },
+        {
+          "name": "Ravioles de ricota y espinaca con salsa a elección",
+          "price": "$15.200"
+        },
+        {
+          "name": "Salmón grillado con vegetales salteados",
+          "price": "$27.800"
+        },
+        {
+          "name": "Risotto de portobelos y parmesano",
+          "price": "$12.000"
+        },
+        {
+          "name": "Tabla de fiambres y quesos (para compartir)",
+          "price": "$8.500"
+        }
+      ]
+    },
+    "jueves": {
+      "almuerzo": [
+        {
+          "name": "Milanesa con puré o ensalada",
+          "price": "$12.500"
+        },
+        {
+          "name": "Pasta casera con salsa a elección",
+          "price": "$14.000"
+        },
+        {
+          "name": "Ensalada César con pollo",
+          "price": "$11.300"
+        },
+        {
+          "name": "Suprema de pollo con guarnición",
+          "price": "$14.900"
+        },
+        {
+          "name": "Tarta de verdura con ensalada",
+          "price": "$7.500"
+        }
+      ],
+      "cena": [
+        {
+          "name": "Bife de chorizo con papas rústicas",
+          "price": "$16.500"
+        },
+        {
+          "name": "Ravioles de ricota y espinaca con salsa a elección",
+          "price": "$15.200"
+        },
+        {
+          "name": "Salmón grillado con vegetales salteados",
+          "price": "$27.800"
+        },
+        {
+          "name": "Risotto de portobelos y parmesano",
+          "price": "$12.000"
+        },
+        {
+          "name": "Tabla de fiambres y quesos (para compartir)",
+          "price": "$8.500"
+        }
+      ]
+    },
+    "viernes": {
+      "almuerzo": [
+        {
+          "name": "Milanesa con puré o ensalada",
+          "price": "$12.500"
+        },
+        {
+          "name": "Pasta casera con salsa a elección",
+          "price": "$14.000"
+        },
+        {
+          "name": "Ensalada César con pollo",
+          "price": "$11.300"
+        },
+        {
+          "name": "Suprema de pollo con guarnición",
+          "price": "$14.900"
+        },
+        {
+          "name": "Tarta de verdura con ensalada",
+          "price": "$7.500"
+        }
+      ],
+      "cena": [
+        {
+          "name": "Bife de chorizo con papas rústicas",
+          "price": "$16.500"
+        },
+        {
+          "name": "Ravioles de ricota y espinaca con salsa a elección",
+          "price": "$15.200"
+        },
+        {
+          "name": "Salmón grillado con vegetales salteados",
+          "price": "$27.800"
+        },
+        {
+          "name": "Risotto de portobelos y parmesano",
+          "price": "$12.000"
+        },
+        {
+          "name": "Tabla de fiambres y quesos (para compartir)",
+          "price": "$8.500"
+        }
+      ]
+    },
+    "sabado": {
+      "almuerzo": [
+        {
+          "name": "Parrillada completa (para 2 personas)",
+          "price": "$35.000"
+        },
+        {
+          "name": "Risotto de hongos Porto Abrantes",
+          "price": "$14.500"
+        },
+        {
+          "name": "Pescado del día a la plancha",
+          "price": "$18.900"
+        },
+        {
+          "name": "Pasta fresca con frutos de mar",
+          "price": "$16.800"
+        },
+        {
+          "name": "Ensalada completa con pollo grillado",
+          "price": "$12.300"
+        }
+      ],
+      "cena": [
+        {
+          "name": "Parrillada completa (para 2 personas)",
+          "price": "$35.000"
+        },
+        {
+          "name": "Risotto de hongos",
+          "price": "$13.500"
+        },
+        {
+          "name": "Pescado del día a la plancha",
+          "price": "$16.900"
+        },
+        {
+          "name": "Pasta fresca con frutos de mar",
+          "price": "$16.800"
+        },
+        {
+          "name": "Ensalada completa con pollo grillado",
+          "price": "$14.300"
+        }
+      ]
+    },
+    "domingo": {
+      "almuerzo": [
+        {
+          "name": "Parrillada completa (para 2 personas)",
+          "price": "$35.000"
+        },
+        {
+          "name": "Risotto de hongos",
+          "price": "$14.500"
+        },
+        {
+          "name": "Pescado del día a la plancha",
+          "price": "$18.900"
+        },
+        {
+          "name": "Pasta fresca con frutos de mar",
+          "price": "$16.800"
+        },
+        {
+          "name": "Ensalada completa con pollo grillado",
+          "price": "$12.300"
+        }
+      ],
+      "cena": "cerrado"
+    }
+  }
+}

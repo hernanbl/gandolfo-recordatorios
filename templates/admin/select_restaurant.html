@@ -1,0 +1,79 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Seleccionar Restaurante{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h1 class="text-2xl font-bold mb-6">Seleccionar Restaurante</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="mb-4 p-4 rounded-md {{ 'bg-green-100 text-green-800' if category == 'success' else 'bg-red-100 text-red-800' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}          {% if restaurantes %}
+            <form method="POST" action="{{ url_for('restaurant.select_restaurant') }}">
+                <div class="grid grid-cols-1 gap-6">
+                    {% for restaurant in restaurantes %}
+                        <div class="border p-4 rounded-lg {{ 'bg-yellow-50 border-yellow-400' if restaurant.id == current_restaurant_id else 'bg-white border-gray-200' }}">
+                            <div class="flex items-center mb-4">
+                                <input type="radio" name="restaurant_id" id="restaurant_{{ restaurant.id }}" value="{{ restaurant.id }}" 
+                                       class="h-4 w-4 text-yellow-600 border-gray-300 focus:ring-yellow-500" 
+                                       {{ 'checked' if restaurant.id == current_restaurant_id }}>
+                                <label for="restaurant_{{ restaurant.id }}" class="ml-3 block text-lg font-semibold text-gray-800">
+                                    {{ restaurant.nombre or 'Restaurante sin nombre' }}
+                                </label>
+                                {% if restaurant.id == current_restaurant_id %}
+                                    <span class="ml-4 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-md">Seleccionado actualmente</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="ml-7 text-gray-600">
+                                <p><strong>ID:</strong> {{ restaurant.id }}</p>
+                                <p><strong>Dirección:</strong> {{ restaurant.direccion or 'Sin dirección' }}</p>
+                                <p><strong>Teléfono:</strong> {{ restaurant.telefono or 'Sin teléfono' }}</p>
+                                <p>
+                                    <strong>Estado:</strong>
+                                    {% if restaurant.activo %}
+                                        <span class="text-green-600">Activo</span>
+                                    {% else %}
+                                        <span class="text-gray-500">Inactivo</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>                <input type="hidden" name="create_new" id="create_new_input" value="false">
+                <div class="mt-6 flex space-x-4">
+                    <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded">
+                        Seleccionar Restaurante
+                    </button>
+                    <a href="{{ url_for('admin.dashboard') }}" class="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded">
+                        Cancelar
+                    </a>
+                    <button type="button" onclick="document.getElementById('create_new_input').value='true'; this.form.submit();" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                        Crear Nuevo Restaurante
+                    </button>
+                </div>
+            </form>        {% else %}            <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+                <p>No hay restaurantes disponibles en el sistema.</p>
+                {% if mensaje %}
+                <p class="mt-2 text-sm">{{ mensaje }}</p>
+                {% endif %}
+            </div>
+            <div class="flex space-x-4">
+                <a href="{{ url_for('admin.crear_restaurante') }}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                    Crear Nuevo Restaurante
+                </a>
+                <a href="{{ url_for('admin.dashboard') }}" class="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded">
+                    Volver
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

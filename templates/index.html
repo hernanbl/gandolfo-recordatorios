@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gandolfo - Chatbot provisto por Vivacom</title>
+    <link rel="icon" type="image/x-icon" href="../static/img/favicon.ico">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: url('/static/img/image-1.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 10px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+        
+        /* Estilos para los mensajes de chat */
+        .user-message {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+        }
+        
+        .user-message > div {
+            background-color: #e6f7ff;
+            border: 1px solid #d1e9ff;
+            border-radius: 0.5rem;
+            border-bottom-right-radius: 0;
+            padding: 0.75rem;
+            max-width: 80%;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .bot-message {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .bot-message > div {
+            background-color: #e6ffea !important;
+            border: 1px solid #d1ffdb !important;
+            border-radius: 0.5rem !important;
+            border-top-left-radius: 0 !important;
+            padding: 0.75rem;
+            max-width: 80%;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Estilos para el indicador de carga */
+        .typing-indicator {
+            display: inline-block;
+            position: relative;
+        }
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            float: left;
+            margin: 0 1px;
+            background-color: #9E9E9E;
+            display: block;
+            border-radius: 50%;
+            opacity: 0.4;
+        }
+        .typing-indicator span:nth-of-type(1) {
+            animation: 1s blink infinite 0.3333s;
+        }
+        .typing-indicator span:nth-of-type(2) {
+            animation: 1s blink infinite 0.6666s;
+        }
+        .typing-indicator span:nth-of-type(3) {
+            animation: 1s blink infinite 0.9999s;
+        }
+        .typing-dot {
+            animation: blink 1.4s infinite both;
+            font-size: 1.5em;
+            line-height: 1;
+        }
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes blink {
+            0% { opacity: 0.2; }
+            20% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header con logo (fondo sólido) -->
+    <header class="bg-white shadow-sm py-4">
+        <div class="container mx-auto px-4 flex items-center justify-center">
+            <img src="/static/img/logo.png" alt="Gandolfo logo" class="h-16 w-auto">
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8 flex-grow max-w-3xl">
+        <div class="bg-white bg-opacity-60 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden">
+            <!-- Chat header con fondo negro sólido -->
+            <div class="bg-black text-white px-6 py-4">
+                <h1 class="text-xl font-semibold">Asistente Virtual</h1>
+                <p class="text-gray-300">Consultas y reservas en Restaurant</p>
+            </div>
+            
+            <!-- Todo lo demás permanece exactamente igual -->
+            <!-- Quick buttons -->
+            <div id="quickActionContainer" class="flex flex-wrap gap-2 p-4 bg-gray-100 bg-opacity-75 justify-center">
+                <button class="quick-button px-4 py-2 bg-white rounded-full text-sm font-medium text-green-700 border border-green-200 shadow-sm hover:bg-green-100 hover:shadow transition-all flex items-center" data-question="¿Cuál es el horario de atención?" data-action="ver_horarios">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Horarios
+                </button>
+                <button class="quick-button px-4 py-2 bg-white rounded-full text-sm font-medium text-green-700 border border-green-200 shadow-sm hover:bg-green-100 hover:shadow transition-all flex items-center" data-question="¿Dónde están ubicados?" data-action="ver_ubicacion">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Ubicación
+                </button>
+                <button class="quick-button px-4 py-2 bg-white rounded-full text-sm font-medium text-green-700 border border-green-200 shadow-sm hover:bg-green-100 hover:shadow transition-all flex items-center" data-question="Quiero hacer una reserva" data-action="reservar">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Hacer reserva
+                </button>
+                <button class="quick-button px-4 py-2 bg-white rounded-full text-sm font-medium text-green-700 border border-green-200 shadow-sm hover:bg-green-100 hover:shadow transition-all flex items-center" data-question="¿Cuál es el menú del día?" data-action="ver_menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    Menú del día
+                </button>
+                <button class="quick-button px-4 py-2 bg-white rounded-full text-sm font-medium text-green-700 border border-green-200 shadow-sm hover:bg-green-100 hover:shadow transition-all flex items-center" data-question="¿Tienen opciones vegetarianas?" data-action="ver_menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                    Opciones vegetarianas
+                </button>
+                <button class="quick-button px-4 py-2 bg-white rounded-full text-sm font-medium text-green-700 border border-green-200 shadow-sm hover:bg-green-100 hover:shadow transition-all flex items-center" data-question="¿Tienen opciones sin TACC o sin gluten?" data-action="ver_menu_especial">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Opciones sin TACC
+                </button>
+            </div>
+            
+            <!-- Chat mensajes -->
+            <div class="chat-messages p-6 bg-gray-50 bg-opacity-75" id="chatMessages">
+                <div class="message bot-message flex justify-start mb-4">
+                    <div class="max-w-[80%] bg-green-50 p-3 rounded-lg rounded-tl-none shadow-sm border border-green-100">
+                        <p class="text-gray-700">¡Hola! Soy el asistente virtual de Gandolfo Restaurant. ¿En qué puedo ayudarte hoy? Puedes preguntarme sobre nuestro menú, horarios, o hacer una reserva.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Input area -->
+            <div class="p-4 border-t border-gray-200 bg-white bg-opacity-90">
+                <div class="flex rounded-lg border border-gray-300 overflow-hidden focus-within:ring-2 focus-within:ring-gray-500 focus-within:border-transparent">
+                    <input type="text" id="chatInput" class="flex-grow px-4 py-2 focus:outline-none" placeholder="Escribe tu mensaje aquí...">
+                    <button id="sendButton" style="background-color: #000000;" class="text-white px-4 py-2 flex items-center hover:bg-gray-800 transition-colors min-w-[48px] justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-white bg-opacity-80 border-t border-gray-200 py-4 mt-auto">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            © 2025 Gandolfo. Un desarrollo de <a href="https://gandolfo.app/" class="text-green-800 hover:text-green-1000">
+                &nbsp;<img src="/static/img/logo-vivacom_gris.png" alt="Gandolfo" class="h-4 inline-block">
+            </a>
+        </div>
+    </footer>
+    
+    <!-- Agregar el script de JavaScript -->
+    <script src="/static/js/chatbot.js"></script>
+</body>
+</html>

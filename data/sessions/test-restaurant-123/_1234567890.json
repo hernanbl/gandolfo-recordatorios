@@ -1,0 +1,7 @@
+{
+  "timestamp": "2025-05-28T16:29:58.484039",
+  "restaurant_id": "test-restaurant-123",
+  "phone_number": "1234567890",
+  "reservation_state": "esperando_fecha",
+  "reservation_data": {}
+}

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autenticando... - Gandolfo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase SDK -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
+            <div class="mb-6">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Gandolfo" class="h-16 w-auto mx-auto mb-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">Autenticando...</h2>
+                <p class="text-gray-600">Verificando tu cuenta de Google</p>
+            </div>
+            
+            <div class="flex justify-center mb-4">
+                <svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+            
+            <p id="statusMessage" class="text-sm text-gray-500">Procesando...</p>
+        </div>
+    </div>
+
+    <script>
+        let supabaseClient = null;
+        
+        // Obtener configuración de Supabase desde el backend
+        async function initializeSupabase() {
+            try {
+                const response = await fetch('/admin/api/config');
+                const config = await response.json();
+                
+                console.log('Configuración Supabase obtenida en callback:', {
+                    url: config.supabase_url,
+                    keyPresent: !!config.supabase_key
+                });
+                
+                if (!config.supabase_url || !config.supabase_key) {
+                    throw new Error('Configuración de Supabase incompleta');
+                }
+                
+                const { createClient } = supabase;
+                supabaseClient = createClient(config.supabase_url, config.supabase_key);
+                
+                console.log('Supabase inicializado correctamente en callback');
+                return true;
+            } catch (error) {
+                console.error('Error inicializando Supabase en callback:', error);
+                return false;
+            }
+        }
+
+        async function handleAuthCallback() {
+            const statusMessage = document.getElementById('statusMessage');
+            
+            try {
+                // Inicializar Supabase primero
+                statusMessage.textContent = 'Configurando...';
+                const initialized = await initializeSupabase();
+                if (!initialized) {
+                    throw new Error('Error de configuración de Supabase');
+                }
+                
+                // Extraer los parámetros del hash de la URL
+                console.log('URL hash:', window.location.hash);
+                const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                const accessToken = hashParams.get('access_token');
+                const refreshToken = hashParams.get('refresh_token');
+                
+                console.log('Access token disponible:', !!accessToken);
+                
+                if (!accessToken) {
+                    throw new Error('No se recibió token de acceso');
+                }
+                
+                statusMessage.textContent = 'Obteniendo información del usuario...';
+                
+                // Usar el token para obtener la sesión del usuario
+                const { data: { user }, error } = await supabaseClient.auth.getUser(accessToken);
+                
+                if (error) {
+                    console.error('Error de Supabase:', error);
+                    throw new Error('Error al obtener información del usuario: ' + error.message);
+                }
+                
+                if (!user) {
+                    throw new Error('Usuario no encontrado');
+                }
+                
+                console.log('Usuario autenticado:', user.email);
+                statusMessage.textContent = 'Configurando tu cuenta...';
+                
+                // Enviar los datos del usuario al backend
+                const response = await fetch('/admin/auth/process-google-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: user.id,
+                        email: user.email,
+                        full_name: user.user_metadata?.full_name || user.email.split('@')[0],
+                        avatar_url: user.user_metadata?.avatar_url,
+                        access_token: accessToken,
+                        refresh_token: refreshToken
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Respuesta del backend:', result);
+                
+                if (!result.success) {
+                    throw new Error(result.error || 'Error al procesar el usuario');
+                }
+                
+                statusMessage.textContent = 'Redirigiendo...';
+                
+                // Redirigir según el resultado
+                if (result.redirect_to) {
+                    // Si hay un mensaje, guardarlo en sessionStorage para mostrarlo después
+                    if (result.message) {
+                        sessionStorage.setItem('auth_message', result.message);
+                        sessionStorage.setItem('auth_message_type', 'success');
+                    }
+                    window.location.href = result.redirect_to;
+                } else {
+                    window.location.href = '/admin/dashboard';
+                }
+                
+            } catch (error) {
+                console.error('Error en callback:', error);
+                statusMessage.textContent = 'Error: ' + error.message;
+                
+                // Mostrar error y redirigir después de 5 segundos
+                setTimeout(() => {
+                    window.location.href = '/?error=' + encodeURIComponent('Error de autenticación: ' + error.message);
+                }, 5000);
+            }
+        }
+
+        // Ejecutar cuando se carga la página
+        window.addEventListener('load', handleAuthCallback);
+    </script>
+</body>
+</html>

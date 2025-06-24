@@ -1,0 +1,13 @@
+{
+  "reminder_data": {
+    "is_reminder": true,
+    "reserva_id": "6d53b0a5-4d8a-46a1-a96e-aa90dc8827da",
+    "fecha": "2025-06-04",
+    "hora": "19:30:00",
+    "personas": 2,
+    "nombre": "Test Confirmacion",
+    "enviado_en": "2025-06-03T15:22:11.628141",
+    "conversation_status": "pending"
+  },
+  "timestamp": "2025-06-03T15:22:11.640115"
+}

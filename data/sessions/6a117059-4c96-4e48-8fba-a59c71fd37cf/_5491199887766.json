@@ -1,0 +1,17 @@
+{
+  "phone_number": "+5491199887766",
+  "restaurant_id": "6a117059-4c96-4e48-8fba-a59c71fd37cf",
+  "created_at": "2025-06-22T15:00:00.000Z",
+  "last_activity": "2025-06-22T15:00:00.000Z",
+  "nombre_completo": "Ana García",
+  "email_conocido": "ana.garcia@email.com",
+  "reservation_state": "esperando_confirmacion",
+  "reservation_data": {
+    "fecha": "23/06/2025",
+    "personas": 3,
+    "nombre": "Ana García",
+    "telefono": "+5491199887766",
+    "email": "ana.garcia@email.com"
+  },
+  "timestamp": "2025-06-22T14:31:29.802451"
+}

@@ -1,0 +1,15 @@
+{
+  "phone_number": "+5491133445566",
+  "restaurant_id": "6a117059-4c96-4e48-8fba-a59c71fd37cf",
+  "created_at": "2025-06-22T15:00:00.000Z",
+  "last_activity": "2025-06-22T15:00:00.000Z",
+  "nombre_completo": "Miguel Rodriguez",
+  "reservation_state": "esperando_email",
+  "reservation_data": {
+    "fecha": "23/06/2025",
+    "personas": 2,
+    "nombre": "Miguel Rodriguez",
+    "telefono": "+5491133445566"
+  },
+  "timestamp": "2025-06-22T14:28:38.053534"
+}
