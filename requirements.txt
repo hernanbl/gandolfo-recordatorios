@@ -8,7 +8,7 @@ flask-cors==4.0.0
 asgiref==3.7.2  # Required for Flask async support
 
 # Base de datos
-supabase==1.0.3
+supabase==0.7.1
 
 # Variables de entorno
 python-dotenv==1.0.0

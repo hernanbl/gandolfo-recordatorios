@@ -158,10 +158,10 @@ def login():
         
         # Intentar login con Supabase Auth usando el servicio robusto
         def perform_auth():
-            return supabase_client.auth.sign_in(
-                email=email,
-                password=password
-            )
+            return supabase_client.auth.sign_in_with_password({
+                "email": email,
+                "password": password
+            })
         
         auth_result = execute_with_retry(perform_auth, max_retries=2)
         
