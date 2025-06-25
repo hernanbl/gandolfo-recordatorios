@@ -403,22 +403,32 @@ Escribí:
         # Verificar si es una respuesta a un recordatorio
         try:
             from services.twilio.reminder_handler import get_user_session_data, handle_reminder_response
-            reminder_data = get_user_session_data(sender, restaurant_id)
+            logger.info(f"🔍 DEBUG: Verificando recordatorio para {sender} en restaurante {restaurant_id}")
             
-            if reminder_data and reminder_data.get('is_reminder') and not reminder_data.get('completed_at'):
-                logger.info(f"🔔 Detectada respuesta a recordatorio activo de {sender} para restaurante {restaurant_id}")
-                logger.info(f"🔔 Mensaje recibido: '{incoming_msg}'")
+            reminder_data = get_user_session_data(sender, restaurant_id)
+            logger.info(f"🔍 DEBUG: reminder_data obtenido: {reminder_data}")
+            
+            if reminder_data:
+                logger.info(f"🔍 DEBUG: reminder_data encontrado - is_reminder: {reminder_data.get('is_reminder')}, completed_at: {reminder_data.get('completed_at')}")
                 
-                # Procesar la respuesta directamente aquí
-                try:
-                    result = handle_reminder_response(incoming_msg, sender, restaurant_config)
-                    logger.info(f"✅ Respuesta de recordatorio procesada: {result}")
-                    return str(response)  # Retornar respuesta vacía ya que handle_reminder_response envía el mensaje
-                except Exception as reminder_error:
-                    logger.error(f"❌ Error procesando respuesta de recordatorio: {str(reminder_error)}")
-                    logger.error(traceback.format_exc())
-                    response.message("Lo sentimos, hubo un error procesando tu respuesta. Por favor contacta al restaurante directamente.")
-                    return str(response)
+                if reminder_data.get('is_reminder') and not reminder_data.get('completed_at'):
+                    logger.info(f"🔔 Detectada respuesta a recordatorio activo de {sender} para restaurante {restaurant_id}")
+                    logger.info(f"🔔 Mensaje recibido: '{incoming_msg}'")
+                    
+                    # Procesar la respuesta directamente aquí
+                    try:
+                        result = handle_reminder_response(incoming_msg, sender, restaurant_config)
+                        logger.info(f"✅ Respuesta de recordatorio procesada: {result}")
+                        return str(response)  # Retornar respuesta vacía ya que handle_reminder_response envía el mensaje
+                    except Exception as reminder_error:
+                        logger.error(f"❌ Error procesando respuesta de recordatorio: {str(reminder_error)}")
+                        logger.error(traceback.format_exc())
+                        response.message("Lo sentimos, hubo un error procesando tu respuesta. Por favor contacta al restaurante directamente.")
+                        return str(response)
+                else:
+                    logger.info(f"🔍 DEBUG: reminder_data encontrado pero no es activo - is_reminder: {reminder_data.get('is_reminder')}, completed_at: {reminder_data.get('completed_at')}")
+            else:
+                logger.info(f"🔍 DEBUG: No se encontró reminder_data para {sender} en restaurante {restaurant_id}")
         except Exception as e:
             logger.error(f"Error al verificar recordatorio: {str(e)}")
             logger.error(traceback.format_exc())

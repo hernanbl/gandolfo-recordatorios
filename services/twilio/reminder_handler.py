@@ -132,22 +132,28 @@ def get_user_session_data(phone_number: str, restaurant_id: str) -> dict:
     Obtiene los datos de la sesión del usuario para el recordatorio enviado, específico del restaurante.
     """
     try:
-        logger.info(f"Intentando obtener sesión para: {phone_number} en Restaurante ID: {restaurant_id}")
+        logger.info(f"🔍 DEBUG: Intentando obtener sesión para: {phone_number} en Restaurante ID: {restaurant_id}")
         
         phone_variants = get_phone_variants(phone_number)
-        logger.info(f"Probando variantes de número: {phone_variants} para R:{restaurant_id}")
+        logger.info(f"🔍 DEBUG: Probando variantes de número: {phone_variants} para R:{restaurant_id}")
         
         for variant in phone_variants:
+            logger.info(f"🔍 DEBUG: Probando variante: {variant}")
             session = get_session(variant, restaurant_id) 
             if session:
-                logger.info(f"Sesión encontrada para variante: {variant} en R:{restaurant_id}")
+                logger.info(f"🔍 DEBUG: Sesión encontrada para variante: {variant} en R:{restaurant_id}")
+                logger.info(f"🔍 DEBUG: Contenido completo de sesión: {session}")
+                
                 if 'reminder_data' in session:
-                    logger.info(f"Datos de recordatorio en sesión para R:{restaurant_id}: {session['reminder_data']}")
+                    logger.info(f"✅ DEBUG: reminder_data encontrado para {variant} en R:{restaurant_id}: {session['reminder_data']}")
                     return session['reminder_data']
                 else:
-                    logger.warning(f"Sesión encontrada pero sin 'reminder_data' para {variant} en R:{restaurant_id}")
+                    logger.warning(f"⚠️ DEBUG: Sesión encontrada pero sin 'reminder_data' para {variant} en R:{restaurant_id}")
+                    logger.warning(f"⚠️ DEBUG: Claves disponibles en sesión: {list(session.keys())}")
+            else:
+                logger.info(f"🔍 DEBUG: No se encontró sesión para variante: {variant}")
         
-        logger.warning(f"No se encontró sesión o 'reminder_data' para ninguna variante de {phone_number} en R:{restaurant_id}")
+        logger.warning(f"❌ DEBUG: No se encontró sesión o 'reminder_data' para ninguna variante de {phone_number} en R:{restaurant_id}")
         return None
         
     except Exception as e:
