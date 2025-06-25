@@ -54,10 +54,10 @@ def test_login(email, password):
         
         print("\n3. Probando autenticación...")
         try:
-            auth_result = supabase.auth.sign_in_with_password({
-                "email": email,
-                "password": password
-            })
+            auth_result = supabase.auth.sign_in(
+                email=email,
+                password=password
+            )
             
             print(f"Auth result: {auth_result}")
             print(f"Auth result type: {type(auth_result)}")

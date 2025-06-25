@@ -158,10 +158,7 @@ def login():
         
         # Intentar login con Supabase Auth usando el servicio robusto
         def perform_auth():
-            return supabase_client.auth.sign_in_with_password({
-                "email": email,
-                "password": password
-            })
+            return robust_supabase_auth(supabase_client, email, password)
         
         auth_result = execute_with_retry(perform_auth, max_retries=2)
         
@@ -1187,13 +1184,13 @@ def feedback():
                 # Distribución de puntuaciones
                 for puntuacion in puntuaciones:
                     if 1 <= puntuacion <= 5:
-                        estadisticas['distribuccion_puntuaciones'][puntuacion - 1] += 1
+                        estadisticas['distribucion_puntuaciones'][puntuacion - 1] += 1
                 
                 # Calcular porcentajes
                 total = estadisticas['total_feedbacks']
                 if total > 0:
                     for i in range(5):
-                        count = estadisticas['distribuccion_puntuaciones'][i]
+                        count = estadisticas['distribucion_puntuaciones'][i]
                         porcentaje = (count / total * 100) if total > 0 else 0
                         estadisticas['porcentajes_puntuaciones'][i] = round(porcentaje, 1)
         
@@ -1247,3 +1244,31 @@ def update_reservation():
             'success': False,
             'error': f'Error interno del servidor: {str(e)}'
         }), 500
+
+# Función robusta de autenticación que funciona con diferentes versiones de Supabase
+def robust_supabase_auth(client, email, password):
+    """
+    Función de autenticación robusta que funciona con diferentes versiones de Supabase.
+    Detecta automáticamente qué método de autenticación está disponible.
+    """
+    try:
+        # Intentar con sign_in (versión 0.7.1 y superiores)
+        if hasattr(client.auth, 'sign_in'):
+            logger.info("🔑 Usando método sign_in (versión moderna)")
+            return client.auth.sign_in(email=email, password=password)
+        
+        # Intentar con sign_in_with_password (versiones más antiguas)
+        elif hasattr(client.auth, 'sign_in_with_password'):
+            logger.info("🔑 Usando método sign_in_with_password (versión legacy)")
+            return client.auth.sign_in_with_password({"email": email, "password": password})
+        
+        # Si no tiene ninguno de los métodos esperados
+        # Si no tiene ninguno de los métodos esperados
+        else:
+            available_methods = [m for m in dir(client.auth) if not m.startswith('_')]
+            logger.error(f"❌ No se encontró método de autenticación válido. Métodos disponibles: {available_methods}")
+            return None
+            
+    except Exception as e:
+        logger.error(f"❌ Error en autenticación robusta: {str(e)}")
+        return None
