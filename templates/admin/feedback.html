@@ -30,7 +30,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate">Total Feedbacks</dt>
-                            <dd class="text-lg font-medium text-gray-900">{{ estadisticas.total_feedbacks }}</dd>
+                            <dd class="text-lg font-medium text-gray-900">{{ estadisticas.total_feedbacks if estadisticas else 0 }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -47,7 +47,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate">Puntuación Promedio</dt>
-                            <dd class="text-lg font-medium text-gray-900">{{ estadisticas.promedio_puntuacion }}/5</dd>
+                            <dd class="text-lg font-medium text-gray-900">{{ estadisticas.promedio_puntuacion if estadisticas else 0 }}/5</dd>
                         </dl>
                     </div>
                 </div>
@@ -57,18 +57,22 @@
             <div class="bg-white rounded-lg shadow-md p-6">
                 <h3 class="text-lg font-medium text-gray-900 mb-3">Distribución de Puntuaciones</h3>
                 <div class="space-y-3">
-                    {% for i in range(5) %}
-                    {% set puntuacion = i + 1 %}
-                    {% set count = estadisticas.distribuccion_puntuaciones[i] %}
-                    {% set porcentaje = (count / estadisticas.total_feedbacks * 100) if estadisticas.total_feedbacks > 0 else 0 %}
-                    <div class="flex items-center">
-                        <span class="w-16 text-sm">{{ puntuacion }} ⭐</span>
-                        <div class="flex-1 bg-gray-200 rounded-full h-4 mx-3">
-                            <div class="bg-yellow-400 h-4 rounded-full" style="width: {{ porcentaje }}%"></div>
+                    {% if estadisticas and estadisticas.distribuccion_puntuaciones %}
+                        {% for i in range(5) %}
+                        {% set puntuacion = i + 1 %}
+                        {% set count = estadisticas.distribuccion_puntuaciones[i] %}
+                        {% set porcentaje = (count / estadisticas.total_feedbacks * 100) if estadisticas.total_feedbacks > 0 else 0 %}
+                        <div class="flex items-center">
+                            <span class="w-16 text-sm">{{ puntuacion }} ⭐</span>
+                            <div class="flex-1 bg-gray-200 rounded-full h-4 mx-3">
+                                <div class="bg-yellow-400 h-4 rounded-full" style="width: {{ porcentaje }}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600">{{ count }} ({{ "%.1f"|format(porcentaje) }}%)</span>
                         </div>
-                        <span class="text-sm text-gray-600">{{ count }} ({{ "%.1f"|format(porcentaje) }}%)</span>
-                    </div>
-                    {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-gray-500 text-sm">Sin datos de distribución</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -147,5 +151,4 @@
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

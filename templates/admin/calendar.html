@@ -1,16 +1,36 @@
-{% extends "admin/base.html" %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario de Reservas - </title>
+    <link rel="icon" type="image/x-icon" href="../static/img/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+    <!-- Añadir el paquete de idioma español -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales/es.js"></script>
+</head>
+<body style="background-color: rgb(227, 230, 230);" class="flex flex-col min-h-screen">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-white shadow-md">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <img src="/static/img/logo.png" alt="Gandolfo Logo" class="h-10 w-auto mr-3">
+                </div>
+                <div class="flex items-center">
+                    <div class="mr-4 text-gray-700">Bienvenido, <span class="font-semibold">{{ username }}</span></div>
+                    <a href="/admin/logout" style="background-color: rgb(251, 194, 34); color: black;" class="hover:bg-[#e0b12e] font-bold py-2 px-4 rounded">
+                        Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-{% block title %}Calendario de Reservas{% endblock %}
-
-{% block extra_head %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
-<!-- Añadir el paquete de idioma español -->
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales/es.js"></script>
-{% endblock %}
-
-{% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Main Content - Aumentado el ancho máximo -->
+    <div class="container mx-auto px-2 sm:px-4 py-6">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-800 mb-6" style="padding: 10px;">Calendario de Reservas</h1>
             <div class="flex space-x-3">
@@ -271,5 +291,13 @@
             });
         });
     </script>
-</div>
-{% endblock %}
+
+    <footer class="bg-white border-t border-gray-200 py-4 mt-auto">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            © 2025 Gandolfo. Un desarrollo de <a href="https://gandolfo.app/" class="text-green-800 hover:text-green-1000">
+                &nbsp;<img src="/static/img/logo-vivacom_gris.png" alt="Vivacom Argentina" class="h-4 inline-block">
+            </a>
+        </div>
+    </footer>
+</body>
+</html>
