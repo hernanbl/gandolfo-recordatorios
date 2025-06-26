@@ -111,7 +111,6 @@ from routes.twilio_routes import twilio_bp
 from routes.reminder_routes import reminder_bp
 from routes.demo_routes import demo_bp
 from routes.restaurant_selector import restaurant_bp
-from routes.debug_routes import debug_bp
 
 # Register blueprints
 app.register_blueprint(web_bp)
@@ -121,7 +120,6 @@ app.register_blueprint(admin_bp, url_prefix='/admin')  # Register admin routes w
 app.register_blueprint(reminder_bp)
 app.register_blueprint(demo_bp)
 app.register_blueprint(restaurant_bp)
-app.register_blueprint(debug_bp)  # Debug routes for production debugging
 
 # Ruta especial para registro desde home (fuera del blueprint admin)
 @app.route('/register', methods=['POST'])
