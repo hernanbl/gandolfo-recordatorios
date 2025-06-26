@@ -364,10 +364,18 @@
             
             try {
                 console.log('Iniciando OAuth con Google...');
+                
+                // Fix temporal: forzar URL de producción si no es localhost
+                const redirectUrl = window.location.hostname === 'localhost' 
+                    ? `${window.location.origin}/admin/auth/callback`
+                    : 'https://gandolfo.app/admin/auth/callback';
+                
+                console.log('Redirect URL for OAuth:', redirectUrl);
+                
                 const { data, error } = await supabaseClient.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: `${window.location.origin}/admin/auth/callback`
+                        redirectTo: redirectUrl
                     }
                 });
                 

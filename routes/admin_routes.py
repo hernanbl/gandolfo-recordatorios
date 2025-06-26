@@ -48,6 +48,12 @@ def auth_callback():
     """Display the auth callback page that will handle the OAuth tokens in JavaScript"""
     return render_template('admin/auth_callback.html')
 
+# OAuth interceptor route - maneja redirects incorrectos de localhost
+@admin_bp.route('/oauth/interceptor', methods=['GET'])
+def oauth_interceptor():
+    """Intercepta y corrige redirects OAuth de localhost a producción"""
+    return render_template('oauth_interceptor.html')
+
 # Process Google user data from frontend
 @admin_bp.route('/auth/process-google-user', methods=['POST'])
 def process_google_user():
