@@ -1258,17 +1258,16 @@ def robust_supabase_auth(client, email, password):
     Detecta automáticamente qué método de autenticación está disponible.
     """
     try:
-        # Intentar con sign_in (versión 0.7.1 y superiores)
-        if hasattr(client.auth, 'sign_in'):
-            logger.info("🔑 Usando método sign_in (versión moderna)")
-            return client.auth.sign_in(email=email, password=password)
-        
-        # Intentar con sign_in_with_password (versiones más antiguas)
-        elif hasattr(client.auth, 'sign_in_with_password'):
-            logger.info("🔑 Usando método sign_in_with_password (versión legacy)")
+        # Primero intentar con sign_in_with_password (método correcto en versiones recientes)
+        if hasattr(client.auth, 'sign_in_with_password'):
+            logger.info("🔑 Usando método sign_in_with_password (versión moderna)")
             return client.auth.sign_in_with_password({"email": email, "password": password})
         
-        # Si no tiene ninguno de los métodos esperados
+        # Fallback: Intentar con sign_in (versiones más antiguas)
+        elif hasattr(client.auth, 'sign_in'):
+            logger.info("🔑 Usando método sign_in (versión legacy)")
+            return client.auth.sign_in(email=email, password=password)
+        
         # Si no tiene ninguno de los métodos esperados
         else:
             available_methods = [m for m in dir(client.auth) if not m.startswith('_')]
@@ -1277,4 +1276,6 @@ def robust_supabase_auth(client, email, password):
             
     except Exception as e:
         logger.error(f"❌ Error en autenticación robusta: {str(e)}")
+        available_methods = [m for m in dir(client.auth) if not m.startswith('_')]
+        logger.error(f"🔍 Métodos disponibles en cliente: {available_methods}")
         return None
