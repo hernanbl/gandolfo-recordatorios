@@ -144,47 +144,23 @@
             this.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Conectando...';
             
             try {
-                // DEBUG: Información completa del entorno
-                console.log('🌐 DEBUG - Información de entorno:');
-                console.log('   hostname:', window.location.hostname);
-                console.log('   protocol:', window.location.protocol);
-                console.log('   origin:', window.location.origin);
-                console.log('   href:', window.location.href);
+                // Detectar el entorno de manera más robusta
+                const isProduction = window.location.hostname === 'gandolfo.app' || 
+                                   window.location.hostname.includes('render.com') ||
+                                   window.location.protocol === 'https:';
                 
-                // Detectar el entorno de manera MÁS específica
-                const hostname = window.location.hostname;
-                const isGandolfoApp = hostname === 'gandolfo.app';
-                const isRenderDomain = hostname.includes('render.com') || hostname.includes('onrender.com');
-                const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
-                
-                // Producción SOLO si es gandolfo.app o render domain
-                const isProduction = isGandolfoApp || isRenderDomain;
-                
-                console.log('🔍 DEBUG - Detección de entorno:');
-                console.log('   isGandolfoApp:', isGandolfoApp);
-                console.log('   isRenderDomain:', isRenderDomain);
-                console.log('   isLocalhost:', isLocalhost);
-                console.log('   isProduction:', isProduction);
-                
-                // Configurar la URL de callback de forma más específica
+                // Configurar la URL de callback apropiada
                 let redirectUrl;
-                if (isGandolfoApp) {
-                    // Específicamente en gandolfo.app
+                if (isProduction) {
+                    // En producción, siempre usar la URL de producción
                     redirectUrl = 'https://gandolfo.app/admin/auth/callback';
-                    console.log('🎯 Usando URL de gandolfo.app');
-                } else if (isRenderDomain) {
-                    // En dominio de Render
-                    redirectUrl = `${window.location.origin}/admin/auth/callback`;
-                    console.log('🎯 Usando URL de Render');
                 } else {
-                    // Desarrollo local
+                    // En desarrollo local, usar localhost
                     redirectUrl = `${window.location.origin}/admin/auth/callback`;
-                    console.log('🎯 Usando URL local');
                 }
                 
                 console.log('🔗 Entorno detectado:', isProduction ? 'PRODUCCIÓN' : 'DESARROLLO');
                 console.log('🎯 Redirect URL configurada:', redirectUrl);
-                console.log('🚨 CRITICAL - Esta URL se enviará a Supabase OAuth:', redirectUrl);
                 
                 // Configurar opciones adicionales para el OAuth
                 const oauthOptions = {

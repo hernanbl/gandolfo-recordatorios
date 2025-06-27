@@ -1257,34 +1257,24 @@ def robust_supabase_auth(client, email, password):
     Función de autenticación robusta que funciona con diferentes versiones de Supabase.
     Detecta automáticamente qué método de autenticación está disponible.
     """
-    # Log métodos disponibles para debugging
-    available_methods = [m for m in dir(client.auth) if not m.startswith('_')]
-    logger.info(f"🔍 Métodos disponibles en cliente auth: {available_methods}")
-    
-    # OPCIÓN 1: Intentar con sign_in_with_password (método correcto en versiones recientes)
-    if hasattr(client.auth, 'sign_in_with_password'):
-        try:
-            logger.info("🔑 Usando método sign_in_with_password (versión moderna)")
-            return client.auth.sign_in_with_password({"email": email, "password": password})
-        except Exception as e:
-            logger.warning(f"⚠️ sign_in_with_password falló: {str(e)}")
-    
-    # OPCIÓN 2: Intentar con sign_in (versiones más antiguas)
-    if hasattr(client.auth, 'sign_in'):
-        try:
-            logger.info("🔑 Usando método sign_in (versión legacy)")
+    try:
+        # Intentar con sign_in (versión 0.7.1 y superiores)
+        if hasattr(client.auth, 'sign_in'):
+            logger.info("🔑 Usando método sign_in (versión moderna)")
             return client.auth.sign_in(email=email, password=password)
-        except Exception as e:
-            logger.warning(f"⚠️ sign_in falló: {str(e)}")
-    
-    # OPCIÓN 3: Intentar sign_in_with_email (muy antigua)
-    if hasattr(client.auth, 'sign_in_with_email'):
-        try:
-            logger.info("🔑 Usando método sign_in_with_email (versión muy antigua)")
-            return client.auth.sign_in_with_email(email, password)
-        except Exception as e:
-            logger.warning(f"⚠️ sign_in_with_email falló: {str(e)}")
-    
-    # Si llegamos aquí, ningún método funcionó
-    logger.error(f"❌ No se encontró método de autenticación válido. Métodos disponibles: {available_methods}")
-    return None
+        
+        # Intentar con sign_in_with_password (versiones más antiguas)
+        elif hasattr(client.auth, 'sign_in_with_password'):
+            logger.info("🔑 Usando método sign_in_with_password (versión legacy)")
+            return client.auth.sign_in_with_password({"email": email, "password": password})
+        
+        # Si no tiene ninguno de los métodos esperados
+        # Si no tiene ninguno de los métodos esperados
+        else:
+            available_methods = [m for m in dir(client.auth) if not m.startswith('_')]
+            logger.error(f"❌ No se encontró método de autenticación válido. Métodos disponibles: {available_methods}")
+            return None
+            
+    except Exception as e:
+        logger.error(f"❌ Error en autenticación robusta: {str(e)}")
+        return None
