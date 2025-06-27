@@ -1258,16 +1258,16 @@ def robust_supabase_auth(client, email, password):
     Detecta automáticamente qué método de autenticación está disponible.
     """
     try:
-        # Intentar con sign_in_with_password (SDK nuevo, producción)
+        # SOLO usar sign_in_with_password si existe (SDK >=1.0.3, producción)
         if hasattr(client.auth, 'sign_in_with_password'):
-            logger.info("🔑 Usando método sign_in_with_password (SDK nuevo)")
+            logger.info("🔑 Usando método sign_in_with_password (SDK >=1.0.3)")
             try:
                 return client.auth.sign_in_with_password(email=email, password=password)
             except TypeError:
                 return client.auth.sign_in_with_password({"email": email, "password": password})
-        # Intentar con sign_in (SDK viejo, local)
+        # Solo intentar sign_in si NO existe sign_in_with_password (SDK <1.0, solo local)
         elif hasattr(client.auth, 'sign_in'):
-            logger.info("🔑 Usando método sign_in (SDK viejo)")
+            logger.info("🔑 Usando método sign_in (SDK <1.0, solo local)")
             return client.auth.sign_in(email=email, password=password)
         # Intentar con sign_in_with_email (SDK muy antiguo)
         elif hasattr(client.auth, 'sign_in_with_email'):
