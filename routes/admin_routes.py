@@ -1258,23 +1258,25 @@ def robust_supabase_auth(client, email, password):
     Detecta automáticamente qué método de autenticación está disponible.
     """
     try:
-        # Intentar con sign_in (versión 0.7.1 y superiores)
-        if hasattr(client.auth, 'sign_in'):
-            logger.info("🔑 Usando método sign_in (versión moderna)")
+        # Intentar con sign_in_with_password (SDK nuevo, producción)
+        if hasattr(client.auth, 'sign_in_with_password'):
+            logger.info("🔑 Usando método sign_in_with_password (SDK nuevo)")
+            try:
+                return client.auth.sign_in_with_password(email=email, password=password)
+            except TypeError:
+                return client.auth.sign_in_with_password({"email": email, "password": password})
+        # Intentar con sign_in (SDK viejo, local)
+        elif hasattr(client.auth, 'sign_in'):
+            logger.info("🔑 Usando método sign_in (SDK viejo)")
             return client.auth.sign_in(email=email, password=password)
-        
-        # Intentar con sign_in_with_password (versiones más antiguas)
-        elif hasattr(client.auth, 'sign_in_with_password'):
-            logger.info("🔑 Usando método sign_in_with_password (versión legacy)")
-            return client.auth.sign_in_with_password({"email": email, "password": password})
-        
-        # Si no tiene ninguno de los métodos esperados
-        # Si no tiene ninguno de los métodos esperados
+        # Intentar con sign_in_with_email (SDK muy antiguo)
+        elif hasattr(client.auth, 'sign_in_with_email'):
+            logger.info("🔑 Usando método sign_in_with_email (SDK muy antiguo)")
+            return client.auth.sign_in_with_email(email, password)
         else:
             available_methods = [m for m in dir(client.auth) if not m.startswith('_')]
             logger.error(f"❌ No se encontró método de autenticación válido. Métodos disponibles: {available_methods}")
             return None
-            
     except Exception as e:
         logger.error(f"❌ Error en autenticación robusta: {str(e)}")
         return None
