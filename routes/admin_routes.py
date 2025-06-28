@@ -1252,31 +1252,6 @@ def update_reservation():
         }), 500
 
 # Función robusta de autenticación que funciona con diferentes versiones de Supabase
-def robust_supabase_auth(client, email, password):
-    """
-    Función de autenticación robusta que funciona con diferentes versiones de Supabase.
-    Detecta automáticamente qué método de autenticación está disponible.
-    """
-    try:
-        # SOLO usar sign_in_with_password si existe (SDK >=1.0.3, producción)
-        if hasattr(client.auth, 'sign_in_with_password'):
-            logger.info("🔑 Usando método sign_in_with_password (SDK >=1.0.3)")
-            try:
-                return client.auth.sign_in_with_password(email=email, password=password)
-            except TypeError:
-                return client.auth.sign_in_with_password({"email": email, "password": password})
-        # Solo intentar sign_in si NO existe sign_in_with_password (SDK <1.0, solo local)
-        elif hasattr(client.auth, 'sign_in'):
-            logger.info("🔑 Usando método sign_in (SDK <1.0, solo local)")
-            return client.auth.sign_in(email=email, password=password)
-        # Intentar con sign_in_with_email (SDK muy antiguo)
-        elif hasattr(client.auth, 'sign_in_with_email'):
-            logger.info("🔑 Usando método sign_in_with_email (SDK muy antiguo)")
-            return client.auth.sign_in_with_email(email, password)
-        else:
-            available_methods = [m for m in dir(client.auth) if not m.startswith('_')]
-            logger.error(f"❌ No se encontró método de autenticación válido. Métodos disponibles: {available_methods}")
-            return None
-    except Exception as e:
+from utils.auth_utils import robust_supabase_auth
         logger.error(f"❌ Error en autenticación robusta: {str(e)}")
         return None
