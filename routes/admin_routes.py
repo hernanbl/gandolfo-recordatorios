@@ -1253,5 +1253,3 @@ def update_reservation():
 
 # Función robusta de autenticación que funciona con diferentes versiones de Supabase
 from utils.auth_utils import robust_supabase_auth
-        logger.error(f"❌ Error en autenticación robusta: {str(e)}")
-        return None
