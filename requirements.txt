@@ -9,7 +9,7 @@ asgiref==3.7.2  # Required for Flask async support
 
 # Base de datos
 supabase>=1.0.4
-postgrest==0.10.8
+postgrest
 httpx==0.24.1
 
 # Variables de entorno
