@@ -7,7 +7,7 @@
           "price": "14600"
         },
         {
-          "name": "Ensalada César",
+          "name": "Ensalada César con nueces",
           "price": "9400"
         },
         {
@@ -61,34 +61,8 @@
       ]
     },
     "miercoles": {
-      "almuerzo": [
-        {
-          "name": "Bife a la criolla con papas",
-          "price": "13200"
-        },
-        {
-          "name": "Ensalada mixta",
-          "price": "8900"
-        },
-        {
-          "name": "Ravioles de ricota y espinaca",
-          "price": "10500"
-        }
-      ],
-      "cena": [
-        {
-          "name": "Pescado del día con ensalada",
-          "price": "12800"
-        },
-        {
-          "name": "Pollo al horno con vegetales",
-          "price": "11200"
-        },
-        {
-          "name": "Pizza especial de la casa",
-          "price": "9800"
-        }
-      ]
+      "almuerzo": [],
+      "cena": []
     },
     "jueves": {
       "almuerzo": [

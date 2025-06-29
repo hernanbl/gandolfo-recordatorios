@@ -90,7 +90,15 @@ app = Flask(__name__,
             template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates'),
             static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static'))
 app.secret_key = SECRET_KEY
-CORS(app)
+# Lista de dominios permitidos
+origins = [
+    "https://gandolfo.app",
+    "https://www.gandolfo.app",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+    "http://localhost:3000" # Puerto común para desarrollo de frontend
+]
+CORS(app, supports_credentials=True, origins=origins)
 
 # Configure error handlers for API routes
 @app.errorhandler(Exception)
@@ -104,13 +112,16 @@ from utils.auth import login_required
 from utils.demo_utils import initialize_demo_restaurant_if_needed
 
 # Blueprints (moved after login_required definition)
-from routes import admin_bp  # This now includes both admin_routes.py and admin.py routes
+from routes import admin_bp
 from routes.web_routes import web_bp
 from routes.api_routes import api_bp
 from routes.twilio_routes import twilio_bp
 from routes.reminder_routes import reminder_bp
 from routes.demo_routes import demo_bp
 from routes.restaurant_selector import restaurant_bp
+
+# FORZAR la ejecución de admin_routes.py para asegurar el registro de todas las rutas
+import routes.admin_routes
 
 # Register blueprints
 app.register_blueprint(web_bp)
@@ -121,84 +132,7 @@ app.register_blueprint(reminder_bp)
 app.register_blueprint(demo_bp)
 app.register_blueprint(restaurant_bp)
 
-# Ruta especial para registro desde home (fuera del blueprint admin)
-@app.route('/register', methods=['POST'])
-def register_from_home():
-    """Register new user from home page and redirect to login"""
-    from db.supabase_client import supabase
-    
-    username = request.form.get('username')  # Email
-    nombre = request.form.get('nombre')
-    password = request.form.get('password')
-    confirm_password = request.form.get('confirm_password')
-    
-    logger.info(f"Registro desde home con email: {username}, nombre: {nombre}")
-    
-    # Validación básica
-    if not username or not nombre or not password or not confirm_password:
-        flash("Todos los campos son obligatorios", "error")
-        return redirect('/')
-    
-    if password != confirm_password:
-        flash("Las contraseñas no coinciden", "error")
-        return redirect('/')
-    
-    if len(password) < 6:
-        flash("La contraseña debe tener al menos 6 caracteres", "error")
-        return redirect('/')
-    
-    try:
-        # Verificar si el email ya existe
-        existing_user = supabase.table('usuarios').select('*').eq('email', username).execute()
-        if existing_user.data:
-            flash("Ya existe un usuario con este email", "error")
-            return redirect('/')
-        
-        # Crear usuario en auth.users usando Supabase Auth
-        auth_response = supabase.auth.sign_up(
-            email=username,
-            password=password
-        )
-        
-        if auth_response.user:
-            logger.info(f"Usuario creado en auth.users: {auth_response.user.id}")
-            
-            # Crear entrada en la tabla usuarios - convertir UUID a string
-            user_data = {
-                "auth_user_id": str(auth_response.user.id),  # Convertir UUID a string
-                "email": username,
-                "nombre": nombre,
-                "rol": "admin"
-                # Quitar "activo": True - la columna no existe
-            }
-            
-            logger.info(f"Intentando insertar en tabla usuarios: {user_data}")
-            usuarios_response = supabase.table('usuarios').insert(user_data).execute()
-            logger.info(f"Respuesta de inserción en usuarios: {usuarios_response.data}")
-            
-            if usuarios_response.data:
-                logger.info(f"Usuario registrado exitosamente desde home: {username}")
-                logger.info(f"Redirigiendo a admin.login...")
-                flash(f"¡Registro exitoso {nombre}! Por favor, inicia sesión para continuar.", "success")
-                return redirect(url_for('admin.login'))
-            else:
-                logger.error("Error: No se pudo insertar en tabla usuarios")
-                logger.error(f"Respuesta completa: {usuarios_response}")
-                flash("Error al crear el perfil de usuario", "error")
-                return redirect('/')
-        else:
-            logger.error(f"Error al crear usuario en auth.users: {auth_response}")
-            error_msg = "Error al crear la cuenta de usuario"
-            if hasattr(auth_response, 'error') and auth_response.error:
-                error_msg = f"Error: {auth_response.error.message}"
-                logger.error(f"Error específico: {auth_response.error.message}")
-            flash(error_msg, "error")
-            return redirect('/')
-            
-    except Exception as e:
-        logger.error(f"Error en registro desde home: {e}", exc_info=True)
-        flash("Error de sistema durante el registro. Por favor, contacte al administrador.", "error")
-        return redirect('/')
+
 
 # Manejadores de error personalizados
 @app.errorhandler(404)
@@ -226,5 +160,10 @@ def before_request():
         g.restaurant_name = None
 
 if __name__ == '__main__':
+    # Diagnóstico: imprimir todas las rutas registradas en Flask
+    print("\n=== RUTAS REGISTRADAS EN FLASK ===")
+    for rule in app.url_map.iter_rules():
+        print(f"{rule} -> endpoint: {rule.endpoint}, methods: {rule.methods}")
+    print("=== FIN DE RUTAS ===\n")
     # Make sure to use the PORT from your config, and enable debug mode
     app.run(host='0.0.0.0', port=PORT, debug=DEBUG)
