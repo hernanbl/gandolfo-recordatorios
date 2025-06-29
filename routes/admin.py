@@ -318,6 +318,9 @@ def menu_editor_redirect():
     """Redirección a la ruta correcta del editor de menú"""
     return redirect('/admin/menu/editor')
 
+from pytz import all_timezones
+from db.supabase_client import supabase
+
 @admin_bp.route('/location_editor_page', methods=['GET'])
 @login_required
 def location_editor_page():
@@ -329,9 +332,20 @@ def location_editor_page():
         flash("Por favor, selecciona un restaurante primero.", "warning")
         return redirect('/admin/crear_restaurante')
     
+    zona_horaria_actual = None
+    try:
+        response = supabase.table('restaurantes').select('zona_horaria').eq('id', restaurant_id).single().execute()
+        if response.data:
+            zona_horaria_actual = response.data.get('zona_horaria')
+    except Exception as e:
+        logger.error(f"Error al cargar la zona horaria actual para el editor de ubicación: {e}", exc_info=True)
+        flash("Error al cargar la configuración de la zona horaria.", "error")
+
     return render_template('admin/location_editor.html',
                           restaurant_name=restaurant_name,
-                          restaurant_id=restaurant_id)
+                          restaurant_id=restaurant_id,
+                          all_timezones=all_timezones,
+                          zona_horaria_actual=zona_horaria_actual)
 
 @admin_bp.route('/get_restaurant_info', methods=['GET'])
 @login_required
@@ -356,7 +370,7 @@ def get_restaurant_info():
         from db.supabase_client import supabase
         
         # Obtener información básica del restaurante desde la tabla restaurantes
-        response = supabase.table('restaurantes').select('*').eq('id', restaurant_id).execute()
+        response = supabase.table('restaurantes').select('*, politicas').eq('id', restaurant_id).execute()
         
         if response.data and len(response.data) > 0:
             restaurant_db = response.data[0]
@@ -380,6 +394,7 @@ def get_restaurant_info():
                 "opening_hours": get_default_opening_hours(),
                 "payment_methods": [],
                 "promotions": [],
+                "policies": restaurant_db.get('politicas', get_default_restaurant_info()['policies']), # Load policies from DB, or use default
                 "config": {
                     "activo": restaurant_db.get('estado') == 'activo',
                     "mostrar_ubicacion_mapa": True
@@ -434,6 +449,58 @@ def get_default_restaurant_info():
         "opening_hours": get_default_opening_hours(),
         "payment_methods": [],
         "promotions": [],
+        "policies": {
+            "pets": {
+                "allowed": False,
+                "restrictions": "",
+                "description": ""
+            },
+            "children": {
+                "allowed": True,
+                "description": "",
+                "amenities": []
+            },
+            "accessibility": {
+                "wheelchair_accessible": False,
+                "braille_menu": False,
+                "description": ""
+            },
+            "dietary_options": {
+                "vegetarian": False,
+                "vegan": False,
+                "gluten_free": False,
+                "description": ""
+            },
+            "parking": {
+                "available": False,
+                "type": "propio",
+                "description": ""
+            },
+            "dress_code": {
+                "required": False,
+                "style": "casual",
+                "description": ""
+            },
+            "smoking": {
+                "allowed": False,
+                "outdoor_allowed": False,
+                "description": ""
+            },
+            "cancellation": {
+                "advance_notice_hours": 4,
+                "policy": "",
+                "description": ""
+            },
+            "noise_level": {
+                "level": "moderado",
+                "description": ""
+            },
+            "group_reservations": {
+                "max_size": 20,
+                "advance_booking_required": False,
+                "description": ""
+            }
+        },
         "config": {
             "activo": True,
             "mostrar_ubicacion_mapa": True
@@ -460,7 +527,9 @@ def save_restaurant_info():
             "opening_hours": json.loads(request.form.get('opening_hours', '{}')),
             "payment_methods": json.loads(request.form.get('payment_methods', '[]')),
             "promotions": json.loads(request.form.get('promotions', '[]')),
-            "config": json.loads(request.form.get('config', '{}'))
+            "config": json.loads(request.form.get('config', '{}')),
+            "timezone": request.form.get('timezone', ''),
+            "policies": json.loads(request.form.get('policies', '{}'))
         }
         
         # Guardar en archivo JSON específico del restaurante
@@ -474,14 +543,15 @@ def save_restaurant_info():
         
         # También actualizar campos básicos en la base de datos
         try:
-            from db.supabase_client import supabase
             
             update_data = {
                 'nombre': restaurant_info.get('name', ''),
                 'descripcion': restaurant_info.get('description', ''),
                 'direccion': restaurant_info.get('location', {}).get('address', ''),
                 'telefono': restaurant_info.get('contact', {}).get('phone', ''),
-                'email': restaurant_info.get('contact', {}).get('email', '')
+                'email': restaurant_info.get('contact', {}).get('email', ''),
+                'zona_horaria': restaurant_info.get('timezone', ''),
+                'politicas': restaurant_info.get('policies', {})
             }
             
             # Filtrar campos vacíos

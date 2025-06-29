@@ -61,6 +61,52 @@
             const statusMessage = document.getElementById('statusMessage');
             
             try {
+                // Detectar si estamos en localhost pero deberíamos estar en producción
+                const currentUrl = window.location.href;
+                const currentHost = window.location.hostname;
+                const hasTokens = window.location.hash.includes('access_token=');
+                
+                console.log('🔍 Callback ejecutándose en:', currentUrl);
+                console.log('🌐 Hostname:', currentHost);
+                console.log('🎟️ Tiene tokens:', hasTokens);
+                
+                // Si estamos en localhost con tokens, y NO estamos en desarrollo local
+                if ((currentHost === 'localhost' || currentHost === '127.0.0.1') && 
+                    hasTokens && 
+                    !window.location.href.includes('5000')) {
+                    
+                    console.log('🔄 Detectado redirect incorrecto de Supabase, redirigiendo a producción...');
+                    statusMessage.textContent = 'Redirigiendo a la aplicación...';
+                    
+                    const hash = window.location.hash;
+                    const productionUrl = `https://gandolfo.app/admin/auth/callback${hash}`;
+                    
+                    // Mostrar mensaje antes de redirigir
+                    document.querySelector('.bg-white').innerHTML = `
+                        <div class="mb-6">
+                            <img src="/static/img/logo.png" alt="Gandolfo" class="h-16 w-auto mx-auto mb-4">
+                            <h2 class="text-xl font-semibold text-gray-800 mb-2">🔄 Redirigiendo...</h2>
+                            <p class="text-gray-600">Completando tu autenticación</p>
+                        </div>
+                        
+                        <div class="flex justify-center mb-4">
+                            <svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                        
+                        <p class="text-sm text-gray-600">Te estamos llevando a la aplicación...</p>
+                    `;
+                    
+                    setTimeout(() => {
+                        window.location.href = productionUrl;
+                    }, 2000);
+                    return;
+                }
+                
+                // Continuar con el proceso normal si estamos en el dominio correcto
+                
                 // Inicializar Supabase primero
                 statusMessage.textContent = 'Configurando...';
                 const initialized = await initializeSupabase();
@@ -69,12 +115,12 @@
                 }
                 
                 // Extraer los parámetros del hash de la URL
-                console.log('URL hash:', window.location.hash);
+                console.log('🔗 URL hash:', window.location.hash);
                 const hashParams = new URLSearchParams(window.location.hash.substring(1));
                 const accessToken = hashParams.get('access_token');
                 const refreshToken = hashParams.get('refresh_token');
                 
-                console.log('Access token disponible:', !!accessToken);
+                console.log('🎟️ Access token disponible:', !!accessToken);
                 
                 if (!accessToken) {
                     throw new Error('No se recibió token de acceso');
@@ -86,7 +132,7 @@
                 const { data: { user }, error } = await supabaseClient.auth.getUser(accessToken);
                 
                 if (error) {
-                    console.error('Error de Supabase:', error);
+                    console.error('❌ Error de Supabase:', error);
                     throw new Error('Error al obtener información del usuario: ' + error.message);
                 }
                 
@@ -94,7 +140,7 @@
                     throw new Error('Usuario no encontrado');
                 }
                 
-                console.log('Usuario autenticado:', user.email);
+                console.log('✅ Usuario autenticado:', user.email);
                 statusMessage.textContent = 'Configurando tu cuenta...';
                 
                 // Enviar los datos del usuario al backend
@@ -114,7 +160,7 @@
                 });
                 
                 const result = await response.json();
-                console.log('Respuesta del backend:', result);
+                console.log('📡 Respuesta del backend:', result);
                 
                 if (!result.success) {
                     throw new Error(result.error || 'Error al procesar el usuario');
@@ -135,7 +181,7 @@
                 }
                 
             } catch (error) {
-                console.error('Error en callback:', error);
+                console.error('💥 Error en callback:', error);
                 statusMessage.textContent = 'Error: ' + error.message;
                 
                 // Mostrar error y redirigir después de 5 segundos

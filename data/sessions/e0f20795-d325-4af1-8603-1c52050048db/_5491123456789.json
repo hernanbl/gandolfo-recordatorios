@@ -1,0 +1,13 @@
+{
+  "reminder_data": {
+    "reserva_id": "8b788984-d786-49d4-802d-6ba1cc9f4766",
+    "reservation_id": "8b788984-d786-49d4-802d-6ba1cc9f4766",
+    "restaurant_id": "e0f20795-d325-4af1-8603-1c52050048db",
+    "is_reminder": true,
+    "confirmation_pending": true,
+    "sent_at": "2025-06-25T11:34:18.131271"
+  },
+  "waiting_for_reminder_response": true,
+  "last_interaction": "2025-06-25T11:34:18.131277",
+  "timestamp": "2025-06-25T11:34:18.131363"
+}

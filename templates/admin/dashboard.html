@@ -82,6 +82,7 @@
             <i class="fas fa-tachometer-alt mr-2"></i>Panel de Administración
         </h1>
         
+        <!-- GRID PRINCIPAL que incluye TODAS las cards con la misma alineación -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Card 1: Resumen -->
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
@@ -158,15 +159,10 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Gráfico de columnas de reservas por día y Top Clientes en una fila -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-            <!-- Card: Reservas diarias del mes actual -->
-            <div class="md:col-span-2">
-                <div class="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
+            <!-- Card 8: Reservas Diarias - OCUPA LAS 3 COLUMNAS -->
+            <div class="col-span-full">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col w-full">
                     <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2">
                         <h2 class="text-xl font-bold flex items-center justify-between" style="color: rgb(92, 101, 42);">
                             <div class="flex items-center">
@@ -186,34 +182,8 @@
                     </div>
                 </div>
             </div>
-            <!-- Card: Top Clientes -->
-            <div class="md:col-span-1">
-                <div class="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
-                    <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2">
-                        <h2 class="text-xl font-bold flex items-center justify-between" style="color: rgb(92, 101, 42);">
-                            <div class="flex items-center">
-                                <i class="fas fa-trophy mr-2"></i>
-                                Top Clientes
-                            </div>
-                            <div class="text-base font-normal">
-                                Últimos 3 meses
-                            </div>
-                        </h2>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col justify-center">
-                        <h3 class="font-semibold text-gray-700 mb-2 text-center">Clientes con más reservas confirmadas</h3>
-                        <div class="h-64 md:h-full flex items-center justify-center">
-                            <canvas id="topClientesChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Tarjeta de Gestión del Menú -->
+            <!-- Card 4: Gestión del Menú - AHORA EN EL MISMO GRID -->
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
                 <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2">
                     <h2 class="text-xl font-bold flex items-center" style="color: rgb(92, 101, 42);">
@@ -234,7 +204,7 @@
                 </div>
             </div>
             
-            <!-- Nueva Tarjeta de Gestión de Ubicación y demas datos -->
+            <!-- Card 5: Gestión de Personalización - AHORA EN EL MISMO GRID -->
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
                 <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2">
                     <h2 class="text-xl font-bold flex items-center" style="color: rgb(92, 101, 42);">
@@ -254,29 +224,47 @@
                     </a>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Añadiendo espacio entre las cards y el footer -->
-  
-
-    <!-- Card: Feedback de Clientes -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        <div class="grid grid-cols-1">
-            <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2">
-                    <h2 class="text-xl font-bold flex items-center" style="color: rgb(92, 101, 42);">
-                        <i class="fas fa-comments mr-2"></i>
-                        Feedback de Clientes
-                    </h2>
-                </div>
-                <div class="p-4">
-                    <div class="text-center">
-                        <div class="text-gray-500 mb-4">
-                            <p>Reseñas de clientes del proceso de reserva</p>
+            <!-- Card 6: Feedback de Clientes - OCUPA 2 COLUMNAS -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
+                    <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2">
+                        <h2 class="text-xl font-bold flex items-center" style="color: rgb(92, 101, 42);">
+                            <i class="fas fa-comments mr-2"></i>
+                            Feedback de Clientes
+                        </h2>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-center">
+                        <div class="text-center">
+                            <div class="text-gray-500 mb-4">
+                                <p>Reseñas de clientes del proceso de reserva</p>
+                            </div>
+                            <a href="/admin/feedback" class="bg-[rgb(253,230,138)] hover:bg-[#e5cb7c] font-bold py-2 px-4 rounded" style="color: #8B6914;">
+                                Ver feedbacks
+                            </a>
                         </div>
-                        <a href="/admin/feedback" class="bg-[rgb(253,230,138)] hover:bg-[#e5cb7c] font-bold py-2 px-4 rounded" style="color: #8B6914;">
-                            Ver feedbacks
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 7: Top Clientes - OCUPA 1 COLUMNA -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col justify-center items-center">
+                    <div style="background-color: rgb(229, 233, 212);" class="px-4 py-2 w-full">
+                        <h2 class="text-xl font-bold flex items-center justify-between" style="color: rgb(92, 101, 42);">
+                            <div class="flex items-center">
+                                <i class="fas fa-trophy mr-2"></i>
+                                Top Clientes
+                            </div>
+                            <div class="text-base font-normal">
+                                Últimos 3 meses
+                            </div>
+                        </h2>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-center items-center">
+                        <h3 class="text-gray-700 mb-4 text-center">Clientes con más reservas confirmadas</h3>
+                        <a href="/admin/top-clientes" class="bg-[rgb(253,230,138)] hover:bg-[#e5cb7c] font-bold py-2 px-4 rounded" style="color: #8B6914;">
+                            Ver gráfico de Top Clientes
                         </a>
                     </div>
                 </div>

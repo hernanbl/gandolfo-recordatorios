@@ -131,7 +131,33 @@ El sistema utiliza dos tareas programadas principales:
 
 ## Despliegue en Render
 
-El proyecto está configurado para ser desplegado en [Render](https://render.com) utilizando el archivo `render.yaml` incluido.
+### Configuración Automática
+El proyecto incluye `render.yaml` con configuración completa:
+
+```yaml
+services:
+  - type: web
+    name: gandolfo-bot
+    plan: free
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run.py
+    
+  - type: cron
+    name: daily-reminders  
+    schedule: "0 10 * * *"  # 10:00 AM UTC diariamente
+    buildCommand: pip install -r requirements.txt
+    startCommand: python scripts/send_reminders.py
+```
+
+### Despliegue
+1. Conectar repositorio de GitHub a Render
+2. Crear nuevo "Blueprint" en Render  
+3. Seleccionar este repositorio
+4. Configurar variables de entorno (ver lista arriba)
+5. Deploy automático desde `render.yaml`
+
+Los **cron jobs** se crearán automáticamente para recordatorios.
 
 ## Variables de Entorno Requeridas
 
@@ -164,7 +190,9 @@ El proyecto está configurado para ser desplegado en [Render](https://render.com
 ### 🔄 Estados de Reserva
 - `INICIO` → `ESPERANDO_FECHA` → `ESPERANDO_PERSONAS` → `ESPERANDO_NOMBRE` → `CONFIRMADA` → `COMPLETADA`
 - Manejo de **interrupciones** y **comandos de ayuda** en cualquier estado
-- **Limpieza automática** de estados problemáticos
+- **Limpieza automática** de sesiones expiradas
+- **Manejo de interrupciones** en cualquier estado
+- **Rollback** ante errores de procesamiento
 
 ### 📱 Integración WhatsApp/Twilio
 - Webhooks seguros con validación de origen
@@ -333,3 +361,5 @@ python scripts/test_bot_responses.py
 ---
 
 **Desarrollado con ❤️ para la gestión inteligente de restaurantes**
+
+<!-- Trigger deploy -->

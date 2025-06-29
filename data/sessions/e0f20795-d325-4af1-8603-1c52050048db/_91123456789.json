@@ -1,0 +1,13 @@
+{
+  "reminder_data": {
+    "is_reminder": true,
+    "reserva_id": "93491f57-f69b-400e-a904-0c07b3f16749",
+    "fecha": "2025-06-26",
+    "hora": "20:00:00",
+    "personas": 2,
+    "nombre": "Test Sistema Real",
+    "enviado_en": "2025-06-25T11:33:50.319675",
+    "conversation_status": "pending"
+  },
+  "timestamp": "2025-06-25T11:33:50.322279"
+}

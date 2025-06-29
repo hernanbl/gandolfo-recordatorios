@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interceptor OAuth - Gandolfo</title>
+    <script>
+        console.log('🔍 OAuth Interceptor cargado en:', window.location.href);
+        
+        // Función para detectar si tenemos tokens OAuth válidos
+        function hasOAuthTokens() {
+            const hash = window.location.hash;
+            return hash.includes('access_token=') && hash.includes('token_type=');
+        }
+        
+        // Función para redirigir a la URL correcta
+        function redirectToCorrectDomain() {
+            const currentHost = window.location.hostname;
+            const hash = window.location.hash;
+            
+            console.log('🌐 Host actual:', currentHost);
+            console.log('🔗 Hash actual:', hash);
+            
+            // Si estamos en localhost pero deberíamos estar en producción
+            if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+                const productionUrl = `https://gandolfo.app/admin/auth/callback${hash}`;
+                console.log('🚀 Redirigiendo a producción:', productionUrl);
+                
+                // Mostrar mensaje antes de redirigir
+                document.body.innerHTML = `
+                    <div style="
+                        display: flex; 
+                        justify-content: center; 
+                        align-items: center; 
+                        height: 100vh; 
+                        font-family: Arial, sans-serif;
+                        background: #f8f9fa;
+                    ">
+                        <div style="
+                            text-align: center; 
+                            padding: 40px; 
+                            background: white; 
+                            border-radius: 12px; 
+                            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                        ">
+                            <h2>🔄 Redirigiendo a Gandolfo...</h2>
+                            <p>Completando tu autenticación con Google</p>
+                            <div style="margin: 20px 0;">
+                                <div style="
+                                    width: 40px; 
+                                    height: 40px; 
+                                    border: 4px solid #f3f3f3; 
+                                    border-top: 4px solid #28a745; 
+                                    border-radius: 50%; 
+                                    animation: spin 1s linear infinite; 
+                                    margin: 0 auto;
+                                "></div>
+                            </div>
+                        </div>
+                    </div>
+                    <style>
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                    </style>
+                `;
+                
+                // Redirigir después de un breve delay para mostrar el mensaje
+                setTimeout(() => {
+                    window.location.href = productionUrl;
+                }, 1500);
+                
+                return true; // Indicamos que hicimos redirect
+            }
+            
+            return false; // No hicimos redirect
+        }
+        
+        // Ejecutar inmediatamente al cargar la página
+        if (hasOAuthTokens()) {
+            console.log('✅ Tokens OAuth detectados');
+            
+            if (!redirectToCorrectDomain()) {
+                console.log('✅ Ya estamos en el dominio correcto, continuando...');
+                // Si ya estamos en el dominio correcto, proceder normalmente
+                window.location.href = '/admin/auth/callback' + window.location.hash;
+            }
+        } else {
+            console.log('❌ No se detectaron tokens OAuth válidos');
+            // Si no hay tokens, redirigir al login
+            window.location.href = '/admin/login';
+        }
+    </script>
+</head>
+<body>
+    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial, sans-serif;">
+        <div style="text-align: center;">
+            <h2>Procesando autenticación...</h2>
+            <p>Por favor espera un momento</p>
+        </div>
+    </div>
+</body>
+</html>
