@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify, flash, current_app
 from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
+from pytz import all_timezones
 import json
 import os
 import uuid
@@ -17,7 +18,141 @@ from utils.auth import login_required
 # Importar utilidades para el modo demo
 from utils.demo_utils import is_demo_restaurant, get_demo_restaurant_info, get_reservas_table
 
+
+# SOLO UNA definición de admin_bp: debe estar al principio del archivo y nunca redefinirse
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+
+# Ruta para la página de Top Clientes
+@admin_bp.route('/top-clientes', methods=['GET'])
+@login_required
+def top_clientes_page():
+    print("[DEBUG] Entrando a la ruta /admin/top-clientes")
+    logging.getLogger(__name__).info("[DEBUG] Entrando a la ruta /admin/top-clientes (logger)")
+    return render_template('admin/top_clientes.html')
+
+# API para obtener datos de Top Clientes
+@admin_bp.route('/api/top-clientes', methods=['GET'])
+@login_required
+def api_top_clientes():
+    try:
+        import logging
+        logger = logging.getLogger(__name__)
+        from datetime import datetime
+        from dateutil.relativedelta import relativedelta
+        now = datetime.now()
+        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        three_months_ago = start_of_month - relativedelta(months=3)
+        restaurant_id = session.get('restaurant_id')
+        user_id = session.get('user_id')
+        logger.info(f"[API_TOP_CLIENTES] user_id={user_id}, restaurant_id={restaurant_id}, session={dict(session)}")
+        if not user_id:
+            logger.warning("[API_TOP_CLIENTES] No hay sesión activa (user_id missing)")
+            return jsonify({'success': False, 'error': 'No hay sesión activa'}), 401
+        if not restaurant_id:
+            logger.warning("[API_TOP_CLIENTES] No hay restaurante seleccionado en sesión")
+            return jsonify({'success': False, 'error': 'No hay restaurante seleccionado'}), 400
+        supabase_client = get_supabase_client()
+        response = (supabase_client.table('reservas_prod')
+            .select('nombre_cliente, estado, fecha')
+            .eq('restaurante_id', restaurant_id)
+            .gte('fecha', three_months_ago.date().isoformat())
+            .lt('fecha', now.date().isoformat())
+            .execute())
+        client_confirmations = {}
+        if hasattr(response, 'data') and response.data:
+            for res in response.data:
+                estado = res.get('estado', '').strip().lower()
+                if estado in ['confirmada', 'confirmado']:
+                    client_name = res.get('nombre_cliente', 'Sin nombre').strip()
+                    if client_name and client_name != 'Sin nombre':
+                        client_confirmations[client_name] = client_confirmations.get(client_name, 0) + 1
+        sorted_clients = sorted(client_confirmations.items(), key=lambda x: x[1], reverse=True)[:8]
+        labels = [name for name, _ in sorted_clients]
+        counts = [count for _, count in sorted_clients]
+        logger.info(f"[API_TOP_CLIENTES] labels={labels}, counts={counts}")
+        return jsonify({'success': True, 'labels': labels, 'counts': counts})
+    except Exception as e:
+        logger.error(f"[API_TOP_CLIENTES] Error: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/register', methods=['POST'])
+def register_from_home():
+    """Register new user from home page and redirect to login"""
+    
+    username = request.form.get('username')  # Email
+    nombre = request.form.get('nombre')
+    password = request.form.get('password')
+    confirm_password = request.form.get('confirm_password')
+    
+    logger.info(f"Registro desde home con email: {username}, nombre: {nombre}")
+    
+    # Validación básica
+    if not username or not nombre or not password or not confirm_password:
+        flash("Todos los campos son obligatorios", "error")
+        return redirect('/')
+    
+    if password != confirm_password:
+        flash("Las contraseñas no coinciden", "error")
+        return redirect('/')
+    
+    from utils.validation import is_strong_password
+    if not is_strong_password(password):
+        flash("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.", "error")
+        return redirect('/')
+    
+    try:
+        # Verificar si el email ya existe
+        existing_user = supabase.table('usuarios').select('*').eq('email', username).execute()
+        if existing_user.data:
+            flash("Ya existe un usuario con este email", "error")
+            return redirect('/')
+        
+        # Crear usuario en auth.users usando Supabase Auth
+        auth_response = supabase.auth.sign_up(
+            email=username,
+            password=password
+        )
+        
+        if auth_response.user:
+            logger.info(f"Usuario creado en auth.users: {auth_response.user.id}")
+            
+            # Crear entrada en la tabla usuarios - convertir UUID a string
+            user_data = {
+                "auth_user_id": str(auth_response.user.id),  # Convertir UUID a string
+                "email": username,
+                "nombre": nombre,
+                "rol": "admin"
+                # Quitar "activo": True - la columna no existe
+            }
+            
+            logger.info(f"Intentando insertar en tabla usuarios: {user_data}")
+            usuarios_response = supabase.table('usuarios').insert(user_data).execute()
+            logger.info(f"Respuesta de inserción en usuarios: {usuarios_response.data}")
+            
+            if usuarios_response.data:
+                logger.info(f"Usuario registrado exitosamente desde home: {username}")
+                logger.info(f"Redirigiendo a admin.login...")
+                flash(f"¡Registro exitoso {nombre}! Por favor, inicia sesión para continuar.", "success")
+                return redirect(url_for('admin.login'))
+            else:
+                logger.error("Error: No se pudo insertar en tabla usuarios")
+                logger.error(f"Respuesta completa: {usuarios_response}")
+                flash("Error al crear el perfil de usuario", "error")
+                return redirect('/')
+        else:
+            logger.error(f"Error al crear usuario en auth.users: {auth_response}")
+            error_msg = "Error al crear la cuenta de usuario"
+            if hasattr(auth_response, 'error') and auth_response.error:
+                error_msg = f"Error: {auth_response.error.message}"
+                logger.error(f"Error específico: {auth_response.error.message}")
+            flash(error_msg, "error")
+            return redirect('/')
+            
+    except Exception as e:
+        logger.error(f"Error en registro desde home: {e}", exc_info=True)
+        flash("Error de sistema durante el registro. Por favor, contacte al administrador.", "error")
+        return redirect('/')
 
 logger = logging.getLogger(__name__)
 
@@ -236,9 +371,37 @@ def login():
                 logger.info("Usuario con múltiples restaurantes, redirigiendo a selección")
                 return redirect('/admin/crear_restaurante')
         else:
-            logger.warning(f"❌ Usuario autenticado pero no encontrado en tabla usuarios: {email}")
-            flash("Usuario autenticado pero no configurado en el sistema. Contacte al administrador.", "error")
-            return render_template('admin/login.html')
+            logger.warning(f"Usuario autenticado con Supabase pero no encontrado en tabla 'usuarios': {email}. Creando perfil...")
+            
+            # Extraer datos del usuario autenticado
+            user_nombre = user_email.split('@')[0] # Nombre por defecto
+            
+            # Crear el perfil en la tabla 'usuarios'
+            new_user_data = {
+                'auth_user_id': auth_user_id,
+                'email': user_email,
+                'nombre': user_nombre,
+                'rol': 'admin'
+            }
+            
+            insert_response = supabase_client.table('usuarios').insert(new_user_data).execute()
+            
+            if insert_response.data:
+                logger.info(f"Perfil de usuario creado exitosamente para {user_email}")
+                user = insert_response.data[0]
+                # Continuar con la lógica de sesión y redirección
+                session['user_id'] = user['id']
+                session['email'] = user['email']
+                session['username'] = user.get('nombre', user_email.split('@')[0])
+                session['nombre_usuario'] = user.get('nombre', user_email.split('@')[0])
+                session['auth_user_id'] = auth_user_id
+                
+                logger.info("Usuario sin restaurantes, redirigiendo a crear restaurante")
+                return redirect('/admin/crear_restaurante')
+            else:
+                logger.error(f"Error fatal: No se pudo crear el perfil para el usuario autenticado {user_email}")
+                flash("Error crítico: Se pudo autenticar pero no crear un perfil de usuario. Contacte al administrador.", "error")
+                return render_template('admin/login.html')
             
     except Exception as e:
         logger.error(f"Error en login con Supabase Auth: {str(e)}")
@@ -271,8 +434,9 @@ def register():
         if password != confirm_password:
             return render_template('admin/register.html', error="Las contraseñas no coinciden")
         
-        if len(password) < 6:
-            return render_template('admin/register.html', error="La contraseña debe tener al menos 6 caracteres")
+        from utils.validation import is_strong_password
+        if not is_strong_password(password):
+            return render_template('admin/register.html', error="La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.")
         
         try:
             # Usar servicio robusto de Supabase
@@ -419,9 +583,6 @@ DEFAULT_RESTAURANT_DATA = {
         "mostrar_ubicacion_mapa": True
     }
 }
-
-import os
-import json
 
 @admin_bp.route('/dashboard', methods=['GET'])
 @login_required
@@ -1173,7 +1334,6 @@ def feedback():
     }
     
     try:
-        from db.supabase_client import supabase
         
         # Obtener todos los feedbacks del restaurante
         response = supabase.table('feedback').select('*').eq('restaurante_id', restaurant_id).order('fecha_feedback', desc=True).execute()
@@ -1211,6 +1371,90 @@ def feedback():
                          username=session.get('nombre_usuario', session.get('username', 'Usuario')),
                          feedbacks=feedbacks or [],
                          estadisticas=estadisticas or {})
+
+
+@admin_bp.route('/configuracion', methods=['GET', 'POST'])
+@login_required
+def configuracion():
+    restaurant_id = session.get('restaurant_id')
+    if not restaurant_id:
+        flash("Por favor, selecciona un restaurante para configurar.", "warning")
+        return redirect(url_for('admin.crear_restaurante'))
+
+    if request.method == 'POST':
+        # Initialize a dictionary to hold the updated configuration
+        updated_config = DEFAULT_RESTAURANT_DATA.copy()
+        
+        # General Details
+        updated_config['name'] = request.form.get('name', '')
+        updated_config['description'] = request.form.get('description', '')
+
+        # Contact Information
+        updated_config['contact']['phone'] = request.form.get('contact_phone', '')
+        updated_config['contact']['email'] = request.form.get('contact_email', '')
+        updated_config['contact']['website'] = request.form.get('contact_website', '')
+        updated_config['contact']['whatsapp'] = request.form.get('contact_whatsapp', '')
+
+        # Location
+        updated_config['location']['address'] = request.form.get('location_address', '')
+        updated_config['location']['city'] = request.form.get('location_city', '')
+        updated_config['location']['google_maps_link'] = request.form.get('location_google_maps_link', '')
+
+        # How to Get There
+        updated_config['como_llegar']['texto_transporte_publico'] = request.form.get('como_llegar_transporte', '')
+        updated_config['como_llegar']['texto_auto'] = request.form.get('como_llegar_auto', '')
+
+        # Opening Hours
+        for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']:
+            is_closed = request.form.get(f'opening_hours_{day}_is_closed') == 'on'
+            updated_config['opening_hours'][day]['is_closed'] = is_closed
+            if not is_closed:
+                updated_config['opening_hours'][day]['slots'][0]['open'] = request.form.get(f'opening_hours_{day}_open', '09:00')
+                updated_config['opening_hours'][day]['slots'][0]['close'] = request.form.get(f'opening_hours_{day}_close', '17:00')
+            else:
+                # Clear times if closed
+                updated_config['opening_hours'][day]['slots'][0]['open'] = ''
+                updated_config['opening_hours'][day]['slots'][0]['close'] = ''
+
+        # Timezone
+        zona_horaria = request.form.get('timezone')
+        if not zona_horaria:
+            flash("La zona horaria no puede estar vacía.", "error")
+            return redirect(url_for('admin.configuracion'))
+
+        try:
+            # Update the 'restaurantes' table with the new config and timezone
+            response = supabase.table('restaurantes').update({
+                'config': updated_config,
+                'zona_horaria': zona_horaria
+            }).eq('id', restaurant_id).execute()
+
+            if response.data:
+                flash("Configuración del restaurante actualizada correctamente.", "success")
+            else:
+                flash("Error al actualizar la configuración del restaurante.", "error")
+        except Exception as e:
+            logger.error(f"Error al guardar la configuración del restaurante: {e}", exc_info=True)
+            flash("Error interno al guardar la configuración del restaurante.", "error")
+        return redirect(url_for('admin.configuracion'))
+
+    else: # GET request
+        zona_horaria_actual = None
+        restaurant_config = DEFAULT_RESTAURANT_DATA.copy()
+        try:
+            response = supabase.table('restaurantes').select('config, zona_horaria').eq('id', restaurant_id).single().execute()
+            if response.data:
+                if response.data.get('config'):
+                    restaurant_config.update(response.data.get('config'))
+                zona_horaria_actual = response.data.get('zona_horaria')
+        except Exception as e:
+            logger.error(f"Error al cargar la configuración del restaurante: {e}", exc_info=True)
+            flash("Error al cargar la configuración del restaurante.", "error")
+
+        return render_template('admin/restaurantes/configuracion.html', 
+                               all_timezones=all_timezones, 
+                               zona_horaria_actual=zona_horaria_actual,
+                               config=restaurant_config)
 
 @admin_bp.route('/api/update_reservation', methods=['POST'])
 @login_required
