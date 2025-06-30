@@ -333,12 +333,19 @@ def location_editor_page():
         return redirect('/admin/crear_restaurante')
     
     zona_horaria_actual = None
+    restaurant_info = {}
     try:
-        response = supabase.table('restaurantes').select('zona_horaria').eq('id', restaurant_id).single().execute()
-        if response.data:
-            zona_horaria_actual = response.data.get('zona_horaria')
+        info_file_path = os.path.join(INFO_DIRECTORY, f"{restaurant_id}_info.json")
+        if os.path.exists(info_file_path):
+            with open(info_file_path, 'r', encoding='utf-8') as f:
+                restaurant_info = json.load(f)
+            zona_horaria_actual = restaurant_info.get('timezone')
+            logger.info(f"Zona horaria cargada desde archivo JSON: {zona_horaria_actual}")
+        else:
+            logger.warning(f"Archivo de información no encontrado para {restaurant_id}. Usando valores por defecto.")
+            pass
     except Exception as e:
-        logger.error(f"Error al cargar la zona horaria actual para el editor de ubicación: {e}", exc_info=True)
+        logger.error(f"Error al cargar la zona horaria actual para el editor de ubicación desde JSON: {e}", exc_info=True)
         flash("Error al cargar la configuración de la zona horaria.", "error")
 
     return render_template('admin/location_editor.html',
@@ -370,34 +377,37 @@ def get_restaurant_info():
         from db.supabase_client import supabase
         
         # Obtener información básica del restaurante desde la tabla restaurantes
-        response = supabase.table('restaurantes').select('*, politicas').eq('id', restaurant_id).execute()
+        # NO SELECCIONAR 'politicas' ni 'zona_horaria' de la BD, ya que vienen del JSON
+        response = supabase.table('restaurantes').select('id, nombre, descripcion, direccion, telefono, email, estado').eq('id', restaurant_id).execute()
         
         if response.data and len(response.data) > 0:
             restaurant_db = response.data[0]
             
             # Crear estructura de datos por defecto con información de la BD
+            # Las políticas y zona horaria se cargarán del JSON o serán las por defecto
             restaurant_info = {
                 "name": restaurant_db.get('nombre', ''),
                 "description": restaurant_db.get('descripcion', ''),
                 "location": {
                     "address": restaurant_db.get('direccion', ''),
-                    "google_maps_link": restaurant_db.get('google_maps_link', '')
+                    "google_maps_link": "" # No se guarda en BD, se asume del JSON
                 },
                 "contact": {
                     "phone": restaurant_db.get('telefono', ''),
                     "email": restaurant_db.get('email', '')
                 },
                 "como_llegar": {
-                    "texto_transporte_publico": restaurant_db.get('transporte_publico', ''),
-                    "texto_auto": restaurant_db.get('como_llegar_auto', '')
+                    "texto_transporte_publico": "", # No se guarda en BD, se asume del JSON
+                    "texto_auto": "" # No se guarda en BD, se asume del JSON
                 },
                 "opening_hours": get_default_opening_hours(),
-                "payment_methods": [],
-                "promotions": [],
-                "policies": restaurant_db.get('politicas', get_default_restaurant_info()['policies']), # Load policies from DB, or use default
+                "payment_methods": [], # No se guarda en BD, se asume del JSON
+                "promotions": [], # No se guarda en BD, se asume del JSON
+                "policies": get_default_restaurant_info()['policies'], # Siempre desde JSON o por defecto
+                "timezone": "", # Siempre desde JSON o por defecto
                 "config": {
                     "activo": restaurant_db.get('estado') == 'activo',
-                    "mostrar_ubicacion_mapa": True
+                    "mostrar_ubicacion_mapa": True # No se guarda en BD, se asume del JSON
                 }
             }
             
