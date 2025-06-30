@@ -1383,7 +1383,7 @@ def feedback():
                          restaurant_name=restaurant_name or 'Restaurante',
                          username=session.get('nombre_usuario', session.get('username', 'Usuario')),
                          feedbacks=feedbacks or [],
-                         estadisticas=estadisticas or {})
+                         estadisticas=estadisticas)
 
 
 @admin_bp.route('/configuracion', methods=['GET', 'POST'])
