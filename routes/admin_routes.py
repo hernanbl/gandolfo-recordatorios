@@ -1343,22 +1343,35 @@ def feedback():
             estadisticas['total_feedbacks'] = len(feedbacks)
             
             # Calcular estadísticas
-            puntuaciones = [f.get('puntuacion', 0) for f in feedbacks if f.get('puntuacion')]
+            puntuaciones = []
+            for f in feedbacks:
+                try:
+                    puntuacion = int(f.get('puntuacion', 0))
+                    if 1 <= puntuacion <= 5:
+                        puntuaciones.append(puntuacion)
+                    else:
+                        logger.warning(f"Feedback {f.get('id')}: Puntuación fuera de rango (1-5): {puntuacion}")
+                except (ValueError, TypeError):
+                    logger.warning(f"Feedback {f.get('id')}: Puntuación no válida: {f.get('puntuacion')}")
+
+            logger.info(f"Feedback: Puntuaciones válidas encontradas: {puntuaciones}")
+
             if puntuaciones:
                 estadisticas['promedio_puntuacion'] = round(sum(puntuaciones) / len(puntuaciones), 1)
                 
                 # Distribución de puntuaciones
                 for puntuacion in puntuaciones:
-                    if 1 <= puntuacion <= 5:
-                        estadisticas['distribucion_puntuaciones'][puntuacion - 1] += 1
+                    estadisticas['distribuccion_puntuaciones'][puntuacion - 1] += 1
                 
                 # Calcular porcentajes
                 total = estadisticas['total_feedbacks']
                 if total > 0:
                     for i in range(5):
-                        count = estadisticas['distribucion_puntuaciones'][i]
+                        count = estadisticas['distribuccion_puntuaciones'][i]
                         porcentaje = (count / total * 100) if total > 0 else 0
                         estadisticas['porcentajes_puntuaciones'][i] = round(porcentaje, 1)
+            else:
+                logger.info("Feedback: No se encontraron puntuaciones válidas para calcular estadísticas.")
         
         logger.info(f"Feedback: Cargados {len(feedbacks)} feedbacks para restaurante {restaurant_id}")
         
