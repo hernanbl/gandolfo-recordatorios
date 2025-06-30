@@ -870,7 +870,7 @@ def handle_whatsapp_message(message, from_number, restaurant_config, message_sid
         def should_use_name():
             return True
 
-        # PRIORIDAD 2: Despedidas y agradecimientos (ANTES que cualquier otra lógica)
+        # PRIORIDAD 1: Despedidas y agradecimientos (MÁXIMA PRIORIDAD - antes que cualquier otra lógica)
         farewell_keywords = [
             'gracias', 'chau', 'adios', 'adiós', 'hasta luego', 'nos vemos', 'bye', 'goodbye',
             'hasta la vista', 'que tengas', 'buen dia', 'buena tarde', 'buena noche',
@@ -878,28 +878,29 @@ def handle_whatsapp_message(message, from_number, restaurant_config, message_sid
             'ok gracias', 'genial gracias', 'excelente gracias', 'barbaro gracias'
         ]
         
-        # Detectar despedidas con mayor precisión
         is_farewell = False
-        
         # IMPORTANTE: No detectar como despedida si el mensaje contiene una calificación numérica (1-5)
         # ya que puede ser feedback que incluye "gracias"
-        import re
         tiene_calificacion = re.search(r'^([1-5])\b', mensaje_normalizado)
         
         if not tiene_calificacion:  # Solo verificar despedidas si NO hay calificación
             for keyword in farewell_keywords:
                 if keyword in mensaje_normalizado:
                     # Verificar que sea realmente una despedida y no parte de otra consulta
-                    if any(word in mensaje_normalizado for word in ['gracias', 'chau', 'adios', 'adiós', 'bye']):
-                        # Verificar que no sea un feedback con palabras positivas
-                        feedback_indicators = ['sistema', 'gustado', 'bueno', 'excelente', 'malo', 'regular']
-                        if not any(indicator in mensaje_normalizado for indicator in feedback_indicators):
-                            is_farewell = True
-                            break
+                    # Si el mensaje es corto y contiene una palabra clave de despedida, asumimos que es una despedida
+                    if len(mensaje_normalizado.split()) <= 5 or any(word in mensaje_normalizado for word in ['gracias', 'chau', 'adios', 'adiós', 'bye']):
+                        is_farewell = True
+                        break
         
         if is_farewell:
             logger.info(f"👋 DESPEDIDA: Detectada despedida en: '{message}'")
             
+            # Limpiar el estado de la sesión al detectar una despedida
+            session['reservation_state'] = RESERVATION_STATES['COMPLETADA']
+            session['reservation_data'] = {}
+            save_session(from_number, session, restaurant_id)
+            logger.info(f"✅ Estado de reserva limpiado para {from_number} debido a despedida.")
+
             # Intentar obtener nombre desde la sesión actual primero
             nombre_usuario = get_first_name(session.get('nombre_cliente', ''))
             

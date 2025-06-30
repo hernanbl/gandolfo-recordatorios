@@ -721,6 +721,16 @@ async def save_reservation(from_number, restaurant_config, session, reservation_
                 mensaje += f"¡Esperamos verte pronto en {restaurant_name}! 😊"
                 
                 send_whatsapp_message(from_number, mensaje, restaurant_config)
+                
+                # 🔥 CRÍTICO: Solicitar feedback después de la confirmación
+                try:
+                    from services.twilio.handler import request_feedback_after_reservation
+                    logger.info(f"📤 FEEDBACK: Programando solicitud de feedback para {from_number}")
+                    request_feedback_after_reservation(from_number, restaurant_config, delay_minutes=2) # 2 minutos de delay
+                except Exception as feedback_error:
+                    logger.error(f"❌ FEEDBACK: Error programando solicitud de feedback: {str(feedback_error)}")
+                    logger.error(f"Traceback: {traceback.format_exc()}")
+
                 return None  # No enviar mensaje de debug al cliente
             
         # Error al guardar
