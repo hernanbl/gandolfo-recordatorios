@@ -549,9 +549,8 @@ def save_restaurant_info():
                 'descripcion': restaurant_info.get('description', ''),
                 'direccion': restaurant_info.get('location', {}).get('address', ''),
                 'telefono': restaurant_info.get('contact', {}).get('phone', ''),
-                'email': restaurant_info.get('contact', {}).get('email', ''),
-                'zona_horaria': restaurant_info.get('timezone', ''),
-                'politicas': restaurant_info.get('policies', {})
+                'email': restaurant_info.get('contact', {}).get('email', '')
+                # 'zona_horaria' y 'politicas' no se guardan en la BD, solo en el JSON
             }
             
             # Filtrar campos vacíos
