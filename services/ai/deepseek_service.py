@@ -161,12 +161,12 @@ INFORMACIÓN DEL MENÚ:
 {menu_text}
 
 Reglas:
-- Sé conciso pero informativo
-- Usa emojis apropiados y de manera discreta 🍽️🥗🍕
-- Si preguntan por algo específico que no está en el json del menú, no inventes menues que no existen
-- Si preguntan precios, menciona los que estén disponibles en el json de menú
-- Mantén un tono amigable y profesional
-- Máximo 200 palabras por respuesta"""
+- Sé conciso pero informativo.
+- Usa emojis apropiados y de manera discreta 🍽️🥗🍕.
+- Si preguntan por algo específico que no está en el menú, no inventes. En su lugar, puedes decir algo como: "No tengo esa información específica en el menú digital, pero nuestro equipo en el restaurante estará encantado de ayudarte. ¿Te gustaría que te conecte con ellos o te doy nuestro número de teléfono?" o "No encuentro ese plato en nuestro menú actual, ¿hay algo más en lo que pueda ayudarte o te gustaría ver nuestras especialidades del día?".
+- Si preguntan precios, menciona los que estén disponibles en el menú.
+- Mantén un tono amigable y profesional.
+- Máximo 200 palabras por respuesta."""
 
         messages = [
             {"role": "system", "content": system_prompt},

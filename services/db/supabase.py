@@ -31,6 +31,7 @@ def get_supabase_client(force_new=False):
     try:
         if _supabase_client is None or force_new:
             logging.info(f"Inicializando cliente Supabase robusto con URL: {url}")
+            logging.debug(f"DEBUG: SUPABASE_URL={url}, SUPABASE_KEY_EXISTS={bool(key)}")
             
             # Crear cliente con configuración simplificada
             # Nota: La API de Supabase Python no soporta configuraciones complejas de headers

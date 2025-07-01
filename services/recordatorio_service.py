@@ -170,15 +170,20 @@ Responde con *1* para CONFIRMAR o *2* para CANCELAR tu reserva.
             'conversation_status': 'pending'
         }
         
-        # Normalizar número y guardar sesión para todas las variantes
-        phone_clean = reserva['telefono'].replace('+', '').replace(' ', '').replace('-', '')
+        # Normalizar número de teléfono a formato E.164 (ej. +54911...)
+        # Eliminar espacios, guiones y paréntesis
+        phone_clean = ''.join(filter(str.isdigit, reserva['telefono']))
         
-        # Asegurar formato correcto del número
-        if not phone_clean.startswith('549'):
-            if phone_clean.startswith('54'):
-                phone_clean = f"9{phone_clean[2:]}"  # Insertar el 9 después del 54
-            else:
-                phone_clean = f"549{phone_clean}"
+        # Asegurar que el número comience con '+' y el código de país
+        if not phone_clean.startswith('54'): # Asumiendo que todos los números son de Argentina
+            phone_clean = '549' + phone_clean # Añadir +549 si no está presente (para móviles de Argentina)
+        
+        # Asegurar que el número tenga el prefijo '+'
+        if not phone_clean.startswith('+'):
+            phone_clean = '+' + phone_clean
+
+        # Formato final para Twilio: whatsapp:+<número>
+        to_number = f"whatsapp:{phone_clean}"
         
         session_data = {'reminder_data': reminder_data}
         logger.info(f"Guardando datos de sesión para recordatorio ID {reserva['id']}")
@@ -190,139 +195,37 @@ Responde con *1* para CONFIRMAR o *2* para CANCELAR tu reserva.
             # Usar un valor por defecto para evitar que falle completamente
             restaurant_id = "default"
         
-        # Guardar sesión para todas las variantes posibles del número con restaurant_id
-        for phone_variant in [
-            f"whatsapp:+{phone_clean}",
-            phone_clean,
-            f"+{phone_clean}",
-            phone_clean[2:] if phone_clean.startswith('54') else None,  # Sin 54
-            phone_clean[3:] if phone_clean.startswith('549') else None  # Sin 549
-        ]:
-            if phone_variant:
-                try:
-                    save_session(phone_variant, session_data, restaurant_id)
-                    logger.info(f"Sesión guardada para variante: {phone_variant} en restaurante: {restaurant_id}")
-                except Exception as e:
-                    logger.error(f"Error guardando sesión para {phone_variant} en restaurante {restaurant_id}: {str(e)}")
-        
-        # Usar el método legacy con persistent_action directamente - esto garantiza que se envíen los botones
+        # Guardar sesión para el número normalizado
         try:
-            from twilio.rest import Client
-            
-            # Asegurarnos de que tenemos acceso a las credenciales de Twilio
-            twilio_account_sid = os.getenv('TWILIO_ACCOUNT_SID')
-            twilio_auth_token = os.getenv('TWILIO_AUTH_TOKEN')
-            twilio_whatsapp_number = os.getenv('TWILIO_WHATSAPP_NUMBER')
-            
-            if not all([twilio_account_sid, twilio_auth_token, twilio_whatsapp_number]):
-                raise Exception("Faltan credenciales de Twilio en las variables de entorno")
-            
-            # Validar que el número de Twilio es válido
-            logger.info(f"🔧 DEBUG - Número de Twilio configurado: '{twilio_whatsapp_number}'")
-            logger.info(f"🔧 DEBUG - Tipo: {type(twilio_whatsapp_number)}")
-            logger.info(f"🔧 DEBUG - Longitud: {len(twilio_whatsapp_number) if twilio_whatsapp_number else 'None'}")
-            
-            client = Client(twilio_account_sid, twilio_auth_token)
-            
-            # Asegurar que el número tenga el formato correcto para WhatsApp
-            to_number = f"whatsapp:+{phone_clean}"
-            
-            # Limpiar el número de WhatsApp de origen para evitar duplicaciones del prefijo
-            if twilio_whatsapp_number.startswith('whatsapp:'):
-                from_number = twilio_whatsapp_number
-                logger.info(f"🔧 DEBUG - Número ya tiene prefijo whatsapp:")
-            else:
-                from_number = f"whatsapp:{twilio_whatsapp_number}"
-                logger.info(f"🔧 DEBUG - Agregando prefijo whatsapp: al número")
-            
-            logger.info(f"🔧 DEBUG - from_number final: '{from_number}'")
-            logger.info(f"🔧 DEBUG - to_number final: '{to_number}'")
-            
-            # Verificación adicional del formato
-            if not from_number.startswith('whatsapp:+'):
-                logger.error(f"❌ FORMATO INCORRECTO - from_number no tiene formato whatsapp:+XXXXXX")
-                logger.error(f"   Valor actual: '{from_number}'")
-                logger.error(f"   Esperado (sandbox): 'whatsapp:+14155238886'")
-                raise Exception(f"Formato incorrecto del número de origen: {from_number}")
-            
-            if not to_number.startswith('whatsapp:+'):
-                logger.error(f"❌ FORMATO INCORRECTO - to_number no tiene formato whatsapp:+XXXXXX")
-                logger.error(f"   Valor actual: '{to_number}'")
-                raise Exception(f"Formato incorrecto del número de destino: {to_number}")
-            
-            # Verificar que el número coincida con el esperado (sandbox)
-            expected_from = "whatsapp:+14155238886"
-            if from_number != expected_from:
-                logger.warning(f"⚠️  NÚMERO DIFERENTE AL ESPERADO (SANDBOX):")
-                logger.warning(f"   Configurado: '{from_number}'")
-                logger.warning(f"   Esperado (sandbox): '{expected_from}'")
-                logger.warning(f"   Si estás en producción, debería ser: 'whatsapp:+18059093442'")
-            
-            logger.info(f"✅ Formatos validados correctamente")
-            
-            logger.info(f"Enviando mensaje WhatsApp desde: {from_number} hacia: {to_number}")
-            
-            # Crear mensaje WhatsApp - sin persistent_action que no es válido
-            message = client.messages.create(
-                body=mensaje,
-                from_=from_number,
-                to=to_number
-            )
-            result = message.sid
-            logger.info(f"Mensaje WhatsApp enviado con botones interactivos. SID: {result}")
-            
-            # Verificar que el mensaje se envió por WhatsApp y no SMS
-            message_details = client.messages(result).fetch()
-            if hasattr(message_details, 'from_') and not message_details.from_.startswith('whatsapp:'):
-                logger.warning(f"ADVERTENCIA: El mensaje se envió como SMS en lugar de WhatsApp!")
-                logger.warning(f"From: {message_details.from_}, To: {message_details.to}")
-            else:
-                logger.info(f"✅ Confirmado: Mensaje enviado por WhatsApp correctamente")
-                    
+            save_session(to_number, session_data, restaurant_id)
+            logger.info(f"Sesión guardada para: {to_number} en restaurante: {restaurant_id}")
         except Exception as e:
-            logger.error(f"Error al enviar mensaje con botones: {str(e)}")
+            logger.error(f"Error guardando sesión para {to_number} en restaurante {restaurant_id}: {str(e)}")
+        
+        try:
+            # Construir el diccionario de configuración del restaurante para la función de mensajería
+            restaurant_config = {
+                'id': reserva.get('restaurante_id', DEFAULT_RESTAURANT_ID),
+                'nombre_restaurante': nombre_restaurante,
+                'twilio_account_sid': config.TWILIO_ACCOUNT_SID,
+                'twilio_auth_token': config.TWILIO_AUTH_TOKEN,
+                'twilio_phone_number': config.TWILIO_WHATSAPP_NUMBER
+            }
+
+            # Usar la función centralizada para enviar mensajes
+            result = send_whatsapp_message(
+                to_number=to_number,
+                message=mensaje,
+                restaurant_config=restaurant_config
+            )
+
+            if not result:
+                raise Exception("El envío de mensaje no retornó un SID.")
+
+        except Exception as e:
+            logger.error(f"Error al enviar mensaje a través de send_whatsapp_message: {str(e)}")
             logger.error(traceback.format_exc())
-            
-            # Verificar si es un error específico de canal de Twilio
-            if "Twilio could not find a Channel with the specified From address" in str(e):
-                logger.error(f"❌ PROBLEMA DE CONFIGURACIÓN DE TWILIO:")
-                logger.error(f"   El número {from_number} no está configurado como canal WhatsApp en Twilio")
-                logger.error(f"   ")
-                logger.error(f"   🔧 SOLUCIONES POSIBLES:")
-                logger.error(f"   1. Si estás en SANDBOX, usar: TWILIO_WHATSAPP_NUMBER=+14155238886")
-                logger.error(f"   2. Si estás en PRODUCCIÓN, usar: TWILIO_WHATSAPP_NUMBER=+18059093442")
-                logger.error(f"   3. Verificar en Twilio Console > Messaging > WhatsApp > Senders")
-                logger.error(f"   4. El número debe estar 'approved' para WhatsApp Business")
-                logger.error(f"   ")
-                logger.error(f"   📱 SANDBOX: Solo números registrados pueden recibir mensajes")
-                logger.error(f"   📱 PRODUCCIÓN: Cualquier número puede recibir mensajes")
-                return None
-            
-            # Intentar enviar sin botones como último recurso solo si no es error de configuración
-            logger.info("Intentando envío de fallback sin botones...")
-            try:
-                # Crear una configuración básica de restaurante para el fallback
-                restaurant_config = {
-                    'id': reserva.get('restaurante_id', 'default'),
-                    'config': {
-                        'twilio_account_sid': twilio_account_sid,
-                        'twilio_auth_token': twilio_auth_token,
-                        'twilio_phone_number': twilio_whatsapp_number
-                    }
-                }
-                result = send_whatsapp_message(
-                    f"+{phone_clean}", 
-                    mensaje,
-                    restaurant_config
-                )
-                if result:
-                    logger.info(f"✅ Fallback exitoso - Mensaje enviado sin botones: {result}")
-                else:
-                    logger.error("❌ Fallback también falló")
-                    return None
-            except Exception as fallback_error:
-                logger.error(f"❌ Error en fallback: {str(fallback_error)}")
-                return None
+            return None
 
         logger.info(f"Resultado envío de mensaje a +{phone_clean}: {result}")
         

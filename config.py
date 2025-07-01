@@ -21,9 +21,9 @@ DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY')
 # Configuración de Twilio
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
-TWILIO_WHATSAPP_NUMBER = os.environ.get('TWILIO_WHATSAPP_NUMBER')
-if TWILIO_WHATSAPP_NUMBER and TWILIO_WHATSAPP_NUMBER.startswith('whatsapp:'):
-    TWILIO_WHATSAPP_NUMBER = TWILIO_WHATSAPP_NUMBER.replace('whatsapp:', '')
+TWILIO_WHATSAPP_NUMBER = '+14155238886' # Usando el número del Sandbox de Twilio
+# if TWILIO_WHATSAPP_NUMBER and TWILIO_WHATSAPP_NUMBER.startswith('whatsapp:'):
+#     TWILIO_WHATSAPP_NUMBER = TWILIO_WHATSAPP_NUMBER.replace('whatsapp:', '')
 TWILIO_REMINDER_TEMPLATE_SID = os.environ.get('TWILIO_REMINDER_TEMPLATE_SID')  # SID de la plantilla para recordatorios con botones
 TWILIO_TEMPLATE_SID = 'HXad67da4f66de21dab850c59b4ed37bdb'  # Template SID para recordatorios con botones
 

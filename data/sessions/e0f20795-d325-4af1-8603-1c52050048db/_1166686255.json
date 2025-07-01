@@ -1,0 +1,13 @@
+{
+  "reminder_data": {
+    "is_reminder": true,
+    "reserva_id": "0bad5dba-93d2-4734-a387-4baa4cc9ad4a",
+    "fecha": "2025-06-26",
+    "hora": "21:30:00",
+    "personas": 5,
+    "nombre": "Hernan Blanco",
+    "enviado_en": "2025-06-25T11:33:49.807176",
+    "conversation_status": "pending"
+  },
+  "timestamp": "2025-06-25T11:33:49.811580"
+}

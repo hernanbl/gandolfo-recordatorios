@@ -1,5 +1,15 @@
 {
-  "timestamp": "2025-05-28T15:51:43.508429",
-  "restaurant_id": "e0f20795-d325-4af1-8603-1c52050048db",
-  "phone_number": "5491166686255"
+  "reminder_data": {
+    "reserva_id": "c3b37614-8756-41d2-bcb8-369e3f0644d0",
+    "reservation_id": "c3b37614-8756-41d2-bcb8-369e3f0644d0",
+    "restaurant_id": "e0f20795-d325-4af1-8603-1c52050048db",
+    "is_reminder": true,
+    "confirmation_pending": true,
+    "sent_at": "2025-06-25T11:35:32.855704",
+    "conversation_status": "confirmed",
+    "completed_at": "2025-06-25T11:51:03.613991"
+  },
+  "waiting_for_reminder_response": true,
+  "last_interaction": "2025-06-25T11:35:32.855710",
+  "timestamp": "2025-06-25T11:51:03.614096"
 }

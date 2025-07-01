@@ -1,3 +1,4 @@
+import os
 import traceback
 import json
 import time
@@ -74,15 +75,23 @@ def send_whatsapp_message(to_number, message, restaurant_config, content_variabl
 
         restaurant_id = restaurant_config.get('id')
         
-        # CORRECCIÓN TEMPORAL: SIEMPRE usar credenciales de sandbox
-        # TODO: Cambiar cuando se configure Twilio correctamente
-        from config import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_NUMBER
-        twilio_account_sid = TWILIO_ACCOUNT_SID
-        twilio_auth_token = TWILIO_AUTH_TOKEN
-        # Usar el número de sandbox que está recibiendo los mensajes
-        twilio_phone_number = "+14155238886"  # Número de sandbox que funciona
-        logger.info(f"🔧 USANDO CREDENCIALES DE SANDBOX para restaurante {restaurant_id}")
-        logger.info(f"🔧 Número de envío: {twilio_phone_number}")
+        # Obtener credenciales de Twilio
+        twilio_account_sid = restaurant_config.get('twilio_account_sid')
+        twilio_auth_token = restaurant_config.get('twilio_auth_token')
+        twilio_phone_number = restaurant_config.get('twilio_phone_number')
+
+        # Si no se encuentran en la configuración del restaurante, usar las variables de entorno globales
+        if not all([twilio_account_sid, twilio_auth_token, twilio_phone_number]):
+            from config import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_NUMBER
+            twilio_account_sid = TWILIO_ACCOUNT_SID
+            twilio_auth_token = TWILIO_AUTH_TOKEN
+            twilio_phone_number = TWILIO_WHATSAPP_NUMBER
+            logger.info(f"Usando credenciales globales de Twilio para restaurante {restaurant_id}")
+
+        if not all([twilio_account_sid, twilio_auth_token, twilio_phone_number]):
+            raise Exception("Faltan credenciales de Twilio en las variables de entorno o configuración del restaurante")
+
+        logger.info(f"🔧 Número de envío configurado: {twilio_phone_number}")
         
         # CÓDIGO ORIGINAL (comentado temporalmente):
         # # Verificar si es el restaurante de demostración
@@ -120,7 +129,7 @@ def send_whatsapp_message(to_number, message, restaurant_config, content_variabl
         # Preparar el número FROM (el número de Twilio del restaurante)
         from_whatsapp = f'whatsapp:{twilio_phone_number}' if not str(twilio_phone_number).startswith('whatsapp:') else str(twilio_phone_number)
         
-        logger.info(f"Enviando mensaje desde {from_whatsapp} (Restaurante: {restaurant_config.get('nombre_restaurante', 'Desconocido')}) a {to_number}")
+        logger.info(f"DEBUG_TWILIO_SEND: Intentando enviar mensaje. From: '{from_whatsapp}', To: '{to_number}', Body: '{message[:50]}...'")
         
         # Inicializar cliente de Twilio con las credenciales del restaurante
         client = Client(twilio_account_sid, twilio_auth_token)
@@ -135,9 +144,15 @@ def send_whatsapp_message(to_number, message, restaurant_config, content_variabl
             except Exception as typing_error:
                 logger.error(f"Error al simular demora de escritura: {str(typing_error)}")
         
+        BASE_APP_URL = os.environ.get('BASE_APP_URL')
+        if not BASE_APP_URL:
+            logger.error("❌ BASE_APP_URL no configurada en las variables de entorno. No se puede establecer StatusCallback.")
+            raise Exception("BASE_APP_URL no configurada.")
+
         message_args = {
             'from_': from_whatsapp,
-            'to': to_number
+            'to': to_number,
+            'status_callback': f'{BASE_APP_URL}/api/twilio/status'
         }
 
         # Determine template SID to use
