@@ -203,78 +203,28 @@ Responde con *1* para CONFIRMAR o *2* para CANCELAR tu reserva.
             logger.error(f"Error guardando sesión para {to_number} en restaurante {restaurant_id}: {str(e)}")
         
         try:
-            from twilio.rest import Client
-            
-            # Asegurarnos de que tenemos acceso a las credenciales de Twilio
-            twilio_account_sid = os.getenv('TWILIO_ACCOUNT_SID')
-            twilio_auth_token = os.getenv('TWILIO_AUTH_TOKEN')
-            twilio_whatsapp_number = os.getenv('TWILIO_WHATSAPP_NUMBER')
-            
-            if not all([twilio_account_sid, twilio_auth_token, twilio_whatsapp_number]):
-                raise Exception("Faltan credenciales de Twilio en las variables de entorno")
-            
-            client = Client(twilio_account_sid, twilio_auth_token)
-            
-            # Asegurar que el número de Twilio de origen tenga el formato correcto
-            from_number = twilio_whatsapp_number
-            if not from_number.startswith('whatsapp:'):
-                from_number = f"whatsapp:{from_number}"
-            
-            logger.info(f"🔧 DEBUG - from_number final: '{from_number}'")
-            logger.info(f"🔧 DEBUG - to_number final: '{to_number}'")
-            
-            # Verificación adicional del formato
-            if not from_number.startswith('whatsapp:+'):
-                logger.error(f"❌ FORMATO INCORRECTO - from_number no tiene formato whatsapp:+XXXXXX")
-                logger.error(f"   Valor actual: '{from_number}'")
-                raise Exception(f"Formato incorrecto del número de origen: {from_number}")
-            
-            if not to_number.startswith('whatsapp:+'):
-                logger.error(f"❌ FORMATO INCORRECTO - to_number no tiene formato whatsapp:+XXXXXX")
-                logger.error(f"   Valor actual: '{to_number}'")
-                raise Exception(f"Formato incorrecto del número de destino: {to_number}")
-            
-            logger.info(f"✅ Formatos validados correctamente")
-            
-            logger.info(f"Enviando mensaje WhatsApp desde: {from_number} hacia: {to_number}")
-            
-            message = client.messages.create(
-                body=mensaje,
-                from_=from_number,
-                to=to_number
+            # Construir el diccionario de configuración del restaurante para la función de mensajería
+            restaurant_config = {
+                'id': reserva.get('restaurante_id', DEFAULT_RESTAURANT_ID),
+                'nombre_restaurante': nombre_restaurante,
+                'twilio_account_sid': config.TWILIO_ACCOUNT_SID,
+                'twilio_auth_token': config.TWILIO_AUTH_TOKEN,
+                'twilio_phone_number': config.TWILIO_WHATSAPP_NUMBER
+            }
+
+            # Usar la función centralizada para enviar mensajes
+            result = send_whatsapp_message(
+                to_number=to_number,
+                message=mensaje,
+                restaurant_config=restaurant_config
             )
-            result = message.sid
-            logger.info(f"Mensaje WhatsApp enviado. SID: {result}")
-            
-            # Verificar que el mensaje se envió por WhatsApp y no SMS
-            message_details = client.messages(result).fetch()
-            if hasattr(message_details, 'from_') and not message_details.from_.startswith('whatsapp:'):
-                logger.warning(f"ADVERTENCIA: El mensaje se envió como SMS en lugar de WhatsApp!")
-                logger.warning(f"From: {message_details.from_}, To: {message_details.to}")
-            else:
-                logger.info(f"✅ Confirmado: Mensaje enviado por WhatsApp correctamente")
-                    
+
+            if not result:
+                raise Exception("El envío de mensaje no retornó un SID.")
+
         except Exception as e:
-            logger.error(f"Error al enviar mensaje: {str(e)}")
+            logger.error(f"Error al enviar mensaje a través de send_whatsapp_message: {str(e)}")
             logger.error(traceback.format_exc())
-            
-            # Verificar si es un error específico de canal de Twilio
-            if "Twilio could not find a Channel with the specified From address" in str(e):
-                logger.error(f"❌ PROBLEMA DE CONFIGURACIÓN DE TWILIO:")
-                logger.error(f"   El número {from_number} no está configurado como canal WhatsApp en Twilio")
-                logger.error(f"   ")
-                logger.error(f"   🔧 SOLUCIONES POSIBLES:")
-                logger.error(f"   1. Si estás en SANDBOX, usar: TWILIO_WHATSAPP_NUMBER=+14155238886")
-                logger.error(f"   2. Si estás en PRODUCCIÓN, usar: TWILIO_WHATSAPP_NUMBER=+18059093442")
-                logger.error(f"   3. Verificar en Twilio Console > Messaging > WhatsApp > Senders")
-                logger.error(f"   4. El número debe estar 'approved' para WhatsApp Business")
-                logger.error(f"   ")
-                logger.error(f"   📱 SANDBOX: Solo números registrados pueden recibir mensajes")
-                logger.error(f"   📱 PRODUCCIÓN: Cualquier número puede recibir mensajes")
-                return None
-            
-            # No intentar fallback si el error es de configuración de Twilio
-            logger.error("No se intentará fallback sin botones debido a un error de configuración de Twilio o error crítico.")
             return None
 
         logger.info(f"Resultado envío de mensaje a +{phone_clean}: {result}")

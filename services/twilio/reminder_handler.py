@@ -269,11 +269,13 @@ def process_confirmation(phone_number: str, restaurant_id: str, restaurant_confi
                 }
                 response = supabase_client.table('reservas_prod').update(update_data).eq('id', reserva_id).eq('restaurante_id', restaurant_id).execute()
                 
-                if response.data:
+                response = supabase_client.table('reservas_prod').update(update_data).eq('id', reserva_id).eq('restaurante_id', restaurant_id).execute()
+                
+                if not response.error:
                     logger.info(f"Reserva {reserva_id} actualizada a 'Confirmada' en Supabase para R:{restaurant_id}.")
-                    mark_conversation_completed(phone_number, restaurant_id, "confirmed")
                     mensaje_confirmacion = f"¡Gracias! Tu reserva en {restaurant_name} ha sido confirmada exitosamente. ¡Te esperamos!"
                     send_whatsapp_message(phone_number, mensaje_confirmacion, restaurant_config)
+                    mark_conversation_completed(phone_number, restaurant_id, "confirmed")
                     return mensaje_confirmacion
                 else:
                     logger.error(f"Error al actualizar reserva {reserva_id} en Supabase para R:{restaurant_id}: {response.error}")
@@ -320,11 +322,11 @@ def process_cancellation(phone_number: str, restaurant_id: str, restaurant_confi
                 }
                 response = supabase_client.table('reservas_prod').update(update_data).eq('id', reserva_id).eq('restaurante_id', restaurant_id).execute()
                 
-                if response.data:
+                if not response.error:
                     logger.info(f"Reserva {reserva_id} actualizada a 'Cancelada' en Supabase para R:{restaurant_id}.")
-                    mark_conversation_completed(phone_number, restaurant_id, "cancelled")
                     mensaje_cancelacion = f"Tu reserva en {restaurant_name} ha sido cancelada exitosamente. Esperamos verte en otra ocasión."
                     send_whatsapp_message(phone_number, mensaje_cancelacion, restaurant_config)
+                    mark_conversation_completed(phone_number, restaurant_id, "cancelled")
                     return mensaje_cancelacion
                 else:
                     logger.error(f"Error al actualizar reserva {reserva_id} (cancelación) en Supabase para R:{restaurant_id}: {response.error}")

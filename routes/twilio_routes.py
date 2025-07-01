@@ -13,7 +13,7 @@ from models.reserva import Reserva
 from utils.db import supabase_client
 from utils.session_manager import get_session, save_session, delete_session
 from services.email_service import enviar_correo_confirmacion
-from services.twilio.handler import handle_whatsapp_message
+
 
 twilio_bp = Blueprint('twilio', __name__, url_prefix='')
 
@@ -163,7 +163,7 @@ def twilio_status_callback():
             pass
         
         # Respuesta vacía con código 200 para confirmar recepción
-        return '', 200
+        return str(MessagingResponse()), 200
         
     except Exception as e:
         logger.error(f"Error al procesar notificación de estado: {str(e)}")
@@ -171,7 +171,7 @@ def twilio_status_callback():
         return '', 500
 
 @twilio_bp.route('/webhook', methods=['GET','POST'])
-def twilio_webhook():
+async def twilio_webhook():
     # Responder a GET para verificar que el webhook está activo
     if request.method == 'GET':
         return "Webhook endpoint is live", 200
@@ -452,7 +452,7 @@ Escribí:
 
         # Procesar el mensaje con el handler
         try:
-            handler_result_message = handle_whatsapp_message(incoming_msg, sender, restaurant_config, message_sid)
+            handler_result_message = await handle_whatsapp_message(incoming_msg, sender, restaurant_config, message_sid)
             logger.info(f"Resultado del handler: {handler_result_message}")
             
             # Solo enviar respuesta TwiML si el handler retorna un mensaje específico
@@ -461,15 +461,12 @@ Escribí:
                 response.message(handler_result_message)
                 logger.info(f"Enviando respuesta TwiML: {handler_result_message}")
             elif session and session.get('error'):
-                # Si hay un error específico en la sesión, usarlo
                 error_msg = session.get('error')
                 logger.warning(f"Error recuperado de la sesión: {error_msg}")
                 response.message(error_msg)
-            else:
-                # Si handler_result_message es None, el mensaje ya fue enviado directamente
-                # No enviar mensaje adicional para evitar duplicados
-                logger.info("Handler retornó None - mensaje ya enviado directamente, no enviando respuesta TwiML adicional")
-            return str(response)
+            
+            # Siempre retornar una respuesta TwiML con 200 OK
+            return str(response), 200
         except Exception as e:
             logger.error(f"Error en handle_whatsapp_message: {str(e)}")
             logger.error(traceback.format_exc())
